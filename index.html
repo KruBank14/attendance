@@ -816,45 +816,37 @@
       <!-- ══ STUDENT DETAIL MODAL ══ -->
       <div id="stuDetailModal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);backdrop-filter:blur(4px)" onclick="closeStudentDetail(event)">
         <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-                    width:min(720px,95vw);max-height:85vh;overflow-y:auto;
+                    width:min(860px,96vw);max-height:90vh;overflow-y:auto;
                     background:var(--surface);border:1px solid var(--border);
-                    border-radius:16px;padding:24px;box-shadow:var(--shadow)" onclick="event.stopPropagation()">
+                    border-radius:16px;padding:28px;box-shadow:var(--shadow)" onclick="event.stopPropagation()">
+
+          <!-- Header -->
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
             <div>
-              <div id="detailName" style="font-size:20px;font-weight:700"></div>
+              <div id="detailName" style="font-size:22px;font-weight:700"></div>
               <div id="detailMeta" style="font-size:13px;color:var(--text3);margin-top:4px"></div>
             </div>
-            <button onclick="closeStudentDetail()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text2);cursor:pointer;font-size:18px">✕</button>
+            <button onclick="closeStudentDetail()" style="background:var(--surface2);border:1px solid var(--border);
+              border-radius:8px;padding:6px 14px;color:var(--text2);cursor:pointer;font-size:18px">✕</button>
           </div>
 
-          <!-- สรุปรายเทอม -->
-          <div id="detailTermStats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px"></div>
+          <!-- สรุปภาพรวม -->
+          <div id="detailTermStats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px"></div>
 
-          <!-- เลือกดูรายเดือน -->
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-            <span style="font-size:13px;font-weight:700;color:var(--text2)">ดูรายเดือน:</span>
-            <select class="select-input" id="detailMonth" onchange="renderDetailMonthly()" style="flex:1">
-              <option value="">-- เลือกเดือน --</option>
-              <option value="05/2568">พ.ค. 2568</option>
-              <option value="06/2568">มิ.ย. 2568</option>
-              <option value="07/2568">ก.ค. 2568</option>
-              <option value="08/2568">ส.ค. 2568</option>
-              <option value="09/2568">ก.ย. 2568</option>
-              <option value="10/2568">ต.ค. 2568</option>
-              <option value="11/2568">พ.ย. 2568</option>
-              <option value="12/2568">ธ.ค. 2568</option>
-              <option value="01/2569">ม.ค. 2569</option>
-              <option value="02/2569">ก.พ. 2569</option>
-              <option value="03/2569">มี.ค. 2569</option>
-            </select>
+          <!-- สถิติรายเดือน — แสดงทั้งหมดเลย -->
+          <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:12px;
+               display:flex;align-items:center;gap:8px">
+            📅 สถิติรายเดือน
+            <span id="detailMonthCount" style="font-size:11px;color:var(--text3);font-weight:400"></span>
           </div>
-
-          <!-- ตารางรายเดือน -->
-          <div id="detailMonthlyGrid" style="margin-bottom:16px"></div>
+          <div id="detailMonthlyGrid" style="margin-bottom:24px"></div>
 
           <!-- ประวัติทั้งหมด -->
-          <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:10px">ประวัติทั้งหมด</div>
-          <div id="detailHistoryList" style="max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:10px"></div>
+          <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:10px">
+            📋 ประวัติทั้งหมด
+          </div>
+          <div id="detailHistoryList" style="max-height:260px;overflow-y:auto;
+               border:1px solid var(--border);border-radius:10px"></div>
         </div>
       </div>
       <div class="page" id="page-students">
@@ -2016,48 +2008,82 @@ function renderDetailMonthlyAuto(s, rows) {
   // จัดกลุ่มตามเดือน/ปี
   const byMonth = {};
   rows.forEach(r => {
-    const parts = (r[4]||'').split('/');
+    const parts = (r[4] || '').split('/');
     if (parts.length < 3) return;
     const key = `${parts[1]}/${parts[2]}`; // mm/yyyy
-    if (!byMonth[key]) byMonth[key] = { p:0, a:0, l:0, lv:0 };
-    const st = r[5] || '';
-    if (st==='present') byMonth[key].p++;
-    else if (st==='absent') byMonth[key].a++;
-    else if (st==='late')   byMonth[key].l++;
-    else if (st==='leave')  byMonth[key].lv++;
+    if (!byMonth[key]) byMonth[key] = [];
+    byMonth[key].push({ day: parseInt(parts[0]), status: r[5] || '', note: r[6] || '' });
   });
 
-  const months = Object.keys(byMonth).sort();
+  const months = Object.keys(byMonth).sort((a, b) => {
+    const [ma, ya] = a.split('/');
+    const [mb, yb] = b.split('/');
+    return ya !== yb ? ya.localeCompare(yb) : ma.localeCompare(mb);
+  });
+
+  const cnt = document.getElementById('detailMonthCount');
+  if (cnt) cnt.textContent = `(${months.length} เดือน)`;
+
   if (!months.length) {
     document.getElementById('detailMonthlyGrid').innerHTML =
-      `<div style="text-align:center;padding:20px;color:var(--text3)">ยังไม่มีประวัติ</div>`;
+      `<div style="text-align:center;padding:24px;color:var(--text3)">ยังไม่มีประวัติการเช็คชื่อ</div>`;
     return;
   }
 
+  const ST_BG    = { present:'rgba(34,197,94,.18)',  absent:'rgba(239,68,68,.18)',
+                     late:'rgba(234,179,8,.18)',      leave:'rgba(59,130,246,.18)' };
+  const ST_COLOR = { present:'var(--green)', absent:'var(--red)',
+                     late:'var(--yellow)',   leave:'var(--blue)' };
+  const ST_LABEL = { present:'มา', absent:'ขาด', late:'สาย', leave:'ลา' };
+
   const html = months.map(key => {
     const [mm, yyyy] = key.split('/');
-    const d = byMonth[key];
-    const tot = d.p + d.a + d.l + d.lv;
-    const pct = tot ? Math.round((d.p/tot)*100) : 0;
+    const days = byMonth[key].sort((a, b) => a.day - b.day);
+    const p  = days.filter(d => d.status === 'present').length;
+    const a  = days.filter(d => d.status === 'absent').length;
+    const l  = days.filter(d => d.status === 'late').length;
+    const lv = days.filter(d => d.status === 'leave').length;
+    const tot = days.length;
+    const pct = tot ? Math.round((p / tot) * 100) : 0;
     const barColor = pct >= 80 ? 'var(--green)' : pct >= 70 ? 'var(--yellow)' : 'var(--red)';
+
+    const dayBoxes = days.map(d => {
+      const bg  = ST_BG[d.status]    || 'var(--surface2)';
+      const col = ST_COLOR[d.status] || 'var(--text3)';
+      const lbl = ST_LABEL[d.status] || '?';
+      const tip = d.note ? ` title="${d.note}"` : '';
+      return `<div${tip} style="width:46px;height:50px;border-radius:8px;display:flex;flex-direction:column;
+                  align-items:center;justify-content:center;gap:2px;cursor:default;
+                  background:${bg};border:1.5px solid ${col}44">
+        <div style="font-size:15px;font-weight:700;color:${col};line-height:1">${d.day}</div>
+        <div style="font-size:10px;color:${col};font-weight:600">${lbl}</div>
+      </div>`;
+    }).join('');
+
     return `
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;
-                padding:12px 14px;margin-bottom:8px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:13px;font-weight:700;color:var(--text2)">
-          ${THAI_MON_LABEL[mm]||mm} ${yyyy}
+    <div style="background:var(--surface2);border:1px solid var(--border);
+                border-radius:12px;padding:16px;margin-bottom:12px">
+      <!-- หัวเดือน -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <span style="font-size:15px;font-weight:700;color:var(--text)">
+          ${THAI_MON_LABEL[mm] || mm} ${yyyy}
         </span>
-        <span style="font-size:14px;font-weight:700;color:${barColor}">${pct}%</span>
+        <div style="display:flex;align-items:center;gap:16px;font-size:12px">
+          <span style="color:var(--green)">✅ ${p}</span>
+          <span style="color:var(--red)">❌ ${a}</span>
+          <span style="color:var(--yellow)">⏰ ${l}</span>
+          <span style="color:var(--blue)">📋 ${lv}</span>
+          <span style="color:var(--text3)">${tot} วัน</span>
+          <span style="font-weight:700;color:${barColor}">${pct}%</span>
+        </div>
       </div>
-      <div style="display:flex;gap:14px;font-size:12px;margin-bottom:8px">
-        <span style="color:var(--green)">✅ มา ${d.p}</span>
-        <span style="color:var(--red)">❌ ขาด ${d.a}</span>
-        <span style="color:var(--yellow)">⏰ สาย ${d.l}</span>
-        <span style="color:var(--blue)">📋 ลา ${d.lv}</span>
-        <span style="color:var(--text3)">รวม ${tot} วัน</span>
-      </div>
-      <div style="background:var(--bg);border-radius:4px;height:6px;overflow:hidden">
+      <!-- progress bar -->
+      <div style="background:var(--bg);border-radius:4px;height:5px;overflow:hidden;margin-bottom:12px">
         <div style="width:${pct}%;height:100%;background:${barColor};border-radius:4px;transition:width .4s"></div>
+      </div>
+      <!-- วันแต่ละวัน -->
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${dayBoxes}
       </div>
     </div>`;
   }).join('');
