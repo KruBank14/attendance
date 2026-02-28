@@ -3,694 +3,294 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ระบบเช็คชื่อนักเรียน</title>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>ระบบเช็คชื่อ — บ้านคลอง 14</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:       #0f1117;
-    --surface:  #1a1d27;
-    --surface2: #21263a;
-    --border:   #2a2f45;
-    --accent:   #4f9cf9;
-    --accent2:  #7c3aed;
-    --green:    #22c55e;
-    --red:      #ef4444;
-    --yellow:   #eab308;
-    --blue:     #3b82f6;
-    --text:     #e2e8f0;
-    --text2:    #94a3b8;
-    --text3:    #64748b;
-    --present:  #16a34a;
-    --absent:   #dc2626;
-    --late:     #d97706;
-    --leave:    #2563eb;
-    --radius:   12px;
-    --shadow:   0 4px 24px rgba(0,0,0,0.4);
-  }
+:root {
+  --bg:#0f1117; --surface:#1a1d27; --surface2:#21263a; --border:#2a2f45;
+  --accent:#4f9cf9; --accent2:#7c3aed;
+  --green:#22c55e; --red:#ef4444; --yellow:#eab308; --blue:#3b82f6;
+  --text:#e2e8f0; --text2:#94a3b8; --text3:#64748b;
+  --present:#16a34a; --absent:#dc2626; --late:#d97706; --leave:#2563eb;
+  --radius:12px; --shadow:0 4px 24px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
+.app{display:flex;min-height:100vh}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* Sidebar */
+.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s}
+.sidebar-logo{padding:20px 20px 14px;border-bottom:1px solid var(--border)}
+.sidebar-logo h1{font-size:15px;font-weight:700;line-height:1.3}
+.school-badge{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--accent2),var(--accent));padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;margin-top:8px}
+nav{flex:1;padding:10px 0;overflow-y:auto}
+.nav-section{padding:6px 16px 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-top:6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;color:var(--text2);font-size:14px;font-weight:500;transition:all .15s;border-left:3px solid transparent}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:rgba(79,156,249,.12);color:var(--accent);border-left-color:var(--accent)}
+.nav-item .icon{font-size:16px;width:20px;text-align:center}
+.sidebar-footer{padding:14px;border-top:1px solid var(--border)}
+.config-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
+.config-box label{font-size:10px;color:var(--text3);display:block;margin-bottom:5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.config-box input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:11px;font-family:monospace;outline:none}
+.config-box input:focus{border-color:var(--accent)}
+.btn-connect{width:100%;margin-top:8px;padding:8px;background:var(--accent);border:none;border-radius:8px;color:white;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn-connect:hover{opacity:.85}
+.connection-status{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0}
+.dot.connected{background:var(--green);box-shadow:0 0 6px var(--green)}
+.dot.error{background:var(--red)}
+.dot.loading{background:var(--yellow);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
-  body {
-    font-family: 'Sarabun', 'Noto Sans Thai', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    font-size: 15px;
-  }
+/* Main */
+.main{flex:1;margin-left:240px;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:17px;font-weight:700}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.date-chip{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;color:var(--text2)}
+.term-chip{background:rgba(79,156,249,.15);border:1px solid var(--accent);border-radius:8px;padding:6px 12px;font-size:13px;color:var(--accent);font-weight:700}
+.content{padding:24px;flex:1}
+.page{display:none}
+.page.active{display:block}
 
-  /* ── Layout ── */
-  .app { display: flex; min-height: 100vh; }
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.card-title{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 
-  /* ── Sidebar ── */
-  .sidebar {
-    width: 240px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 0; left: 0; bottom: 0;
-    z-index: 100;
-    transition: transform .3s;
-  }
-  .sidebar-logo {
-    padding: 20px 20px 16px;
-    border-bottom: 1px solid var(--border);
-  }
-  .sidebar-logo h1 {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.3;
-  }
-  .sidebar-logo p {
-    font-size: 12px;
-    color: var(--text3);
-    margin-top: 2px;
-  }
-  .school-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: linear-gradient(135deg, var(--accent2), var(--accent));
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    margin-top: 8px;
-  }
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.present::before{background:var(--green)}
+.stat-card.absent::before{background:var(--red)}
+.stat-card.late::before{background:var(--yellow)}
+.stat-card.leave::before{background:var(--blue)}
+.stat-label{font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.stat-value{font-size:34px;font-weight:700;margin:6px 0 2px;line-height:1}
+.stat-card.present .stat-value{color:var(--green)}
+.stat-card.absent  .stat-value{color:var(--red)}
+.stat-card.late    .stat-value{color:var(--yellow)}
+.stat-card.leave   .stat-value{color:var(--blue)}
+.stat-sub{font-size:12px;color:var(--text3)}
+.progress-wrap{background:var(--surface2);border-radius:4px;height:6px;overflow:hidden;margin-top:8px}
+.progress-bar{height:100%;border-radius:4px;transition:width .4s;background:var(--accent)}
 
-  nav { flex: 1; padding: 12px 0; overflow-y: auto; }
-  .nav-section {
-    padding: 6px 16px 4px;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .08em;
-    color: var(--text3);
-    margin-top: 8px;
-  }
-  .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
-    cursor: pointer;
-    border-radius: 0;
-    color: var(--text2);
-    font-size: 14px;
-    font-weight: 500;
-    transition: all .15s;
-    border-left: 3px solid transparent;
-    position: relative;
-  }
-  .nav-item:hover { background: var(--surface2); color: var(--text); }
-  .nav-item.active {
-    background: rgba(79,156,249,.12);
-    color: var(--accent);
-    border-left-color: var(--accent);
-  }
-  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
-  .nav-badge {
-    margin-left: auto;
-    background: var(--red);
-    color: white;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 10px;
-  }
+/* Toolbar */
+.toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.select-input,.date-input,.search-input{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none;cursor:pointer}
+.select-input:focus,.date-input:focus,.search-input:focus{border-color:var(--accent)}
+.search-input{width:200px}
 
-  .sidebar-footer {
-    padding: 16px;
-    border-top: 1px solid var(--border);
-  }
-  .config-box {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 12px;
-  }
-  .config-box label {
-    font-size: 11px;
-    color: var(--text3);
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .05em;
-  }
-  .config-box input {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 7px 10px;
-    color: var(--text);
-    font-size: 12px;
-    font-family: monospace;
-    outline: none;
-  }
-  .config-box input:focus { border-color: var(--accent); }
-  .btn-connect {
-    width: 100%;
-    margin-top: 8px;
-    padding: 8px;
-    background: var(--accent);
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    transition: opacity .15s;
-  }
-  .btn-connect:hover { opacity: .85; }
-  .connection-status {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 8px;
-    font-size: 12px;
-  }
-  .dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--text3);
-    flex-shrink: 0;
-  }
-  .dot.connected { background: var(--green); box-shadow: 0 0 6px var(--green); }
-  .dot.error     { background: var(--red); }
-  .dot.loading   { background: var(--yellow); animation: pulse 1s infinite; }
+/* Term info bar */
+.term-info-bar{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.term-info-bar .ti-item{font-size:13px}
+.term-info-bar .ti-label{color:var(--text3);margin-right:4px}
+.term-info-bar .ti-val{color:var(--text);font-weight:600}
 
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+/* Mark all bar */
+.mark-all-bar{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mark-all-bar span{font-size:13px;color:var(--text2);font-weight:600}
 
-  /* ── Main ── */
-  .main {
-    flex: 1;
-    margin-left: 240px;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
+/* Table */
+.att-table-wrap{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--surface2)}
+th{padding:11px 14px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid rgba(42,47,69,.5);font-size:14px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.student-name{font-weight:600}
+.student-id{font-size:12px;color:var(--text3);font-family:monospace}
 
-  .topbar {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-  }
-  .topbar-title {
-    font-size: 17px;
-    font-weight: 700;
-  }
-  .topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .date-chip {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 6px 14px;
-    font-size: 13px;
-    color: var(--text2);
-  }
+/* Status buttons */
+.status-group{display:flex;gap:5px}
+.status-btn{padding:5px 10px;border-radius:6px;border:1.5px solid transparent;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;background:var(--surface2);color:var(--text3)}
+.status-btn:hover{color:var(--text);border-color:var(--border)}
+.status-btn.active-present{background:rgba(34,197,94,.15);color:var(--green);border-color:var(--green)}
+.status-btn.active-absent{background:rgba(239,68,68,.15);color:var(--red);border-color:var(--red)}
+.status-btn.active-late{background:rgba(234,179,8,.15);color:var(--yellow);border-color:var(--yellow)}
+.status-btn.active-leave{background:rgba(59,130,246,.15);color:var(--blue);border-color:var(--blue)}
+.note-input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-size:12px;width:140px;font-family:inherit;outline:none}
+.note-input:focus{border-color:var(--accent)}
 
-  .content { padding: 24px; flex: 1; }
+/* Buttons */
+.btn{padding:9px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--accent);color:white}
+.btn-primary:hover{opacity:.85}
+.btn-success{background:var(--green);color:white}
+.btn-success:hover{opacity:.85}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text2)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:rgba(239,68,68,.15);color:var(--red);border:1.5px solid var(--red)}
 
-  /* ── Pages ── */
-  .page { display: none; }
-  .page.active { display: block; }
+/* Badges */
+.gender-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.gender-m{background:rgba(59,130,246,.15);color:#60a5fa}
+.gender-f{background:rgba(236,72,153,.15);color:#f472b6}
+.grade-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:600;background:var(--surface2);color:var(--text2)}
+.status-pill{display:inline-block;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700}
+.pill-active{background:rgba(34,197,94,.15);color:var(--green)}
+.pill-transferred{background:rgba(239,68,68,.12);color:#f87171}
 
-  /* ── Cards ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    box-shadow: var(--shadow);
-  }
-  .card-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text2);
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+/* Calendar */
+.cal-item{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px}
+.cal-date{text-align:center;min-width:48px;background:var(--bg);border-radius:8px;padding:5px}
+.cal-date-day{font-size:18px;font-weight:700;line-height:1}
+.cal-date-mon{font-size:10px;color:var(--text3)}
+.cal-name{font-size:14px;font-weight:600;flex:1}
+.cal-term{font-size:11px;color:var(--text3);background:var(--surface);padding:2px 8px;border-radius:6px}
+.type-holiday{color:var(--red);font-size:12px;font-weight:700}
+.type-makeup{color:var(--green);font-size:12px;font-weight:700}
 
-  /* ── Stats grid ── */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    position: relative;
-    overflow: hidden;
-  }
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-  }
-  .stat-card.present::before { background: var(--green); }
-  .stat-card.absent::before  { background: var(--red); }
-  .stat-card.late::before    { background: var(--yellow); }
-  .stat-card.leave::before   { background: var(--blue); }
-  .stat-label {
-    font-size: 12px;
-    color: var(--text3);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .05em;
-  }
-  .stat-value {
-    font-size: 36px;
-    font-weight: 700;
-    margin: 8px 0 4px;
-    line-height: 1;
-  }
-  .stat-card.present .stat-value { color: var(--green); }
-  .stat-card.absent  .stat-value { color: var(--red); }
-  .stat-card.late    .stat-value { color: var(--yellow); }
-  .stat-card.leave   .stat-value { color: var(--blue); }
-  .stat-sub { font-size: 12px; color: var(--text3); }
+/* Settings form */
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.form-input,.form-select{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color .15s}
+.form-input:focus,.form-select:focus{border-color:var(--accent)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 
-  /* ── Toolbar ── */
-  .toolbar {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  .select-input, .date-input, .search-input {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 9px 14px;
-    color: var(--text);
-    font-size: 13px;
-    font-family: inherit;
-    outline: none;
-    cursor: pointer;
-  }
-  .select-input:focus, .date-input:focus, .search-input:focus {
-    border-color: var(--accent);
-  }
-  .search-input { width: 220px; }
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.65);backdrop-filter:blur(4px)}
+.modal-box{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(740px,95vw);max-height:88vh;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:var(--shadow)}
 
-  /* ── Attendance table ── */
-  .att-table-wrap {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
-  table { width: 100%; border-collapse: collapse; }
-  thead tr { background: var(--surface2); }
-  th {
-    padding: 12px 16px;
-    text-align: left;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    color: var(--text3);
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-  td {
-    padding: 12px 16px;
-    border-bottom: 1px solid rgba(42,47,69,.5);
-    font-size: 14px;
-    vertical-align: middle;
-  }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(255,255,255,.02); }
+/* Student detail stats */
+.detail-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.detail-stat{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+.detail-stat-val{font-size:26px;font-weight:700;line-height:1}
+.detail-stat-label{font-size:11px;color:var(--text3);margin-top:3px}
 
-  .student-name { font-weight: 600; }
-  .student-id   { font-size: 12px; color: var(--text3); font-family: monospace; }
+/* Monthly grid */
+.month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:14px}
+.month-day-header{text-align:center;font-size:11px;font-weight:700;color:var(--text3);padding:4px 0}
+.month-day{text-align:center;border-radius:6px;padding:5px 2px;font-size:12px;min-height:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.month-day.empty{background:transparent}
+.month-day.weekend{background:var(--surface2);color:var(--text3)}
+.month-day.holiday{background:rgba(239,68,68,.1);color:var(--red)}
+.month-day.present{background:rgba(34,197,94,.15);color:var(--green);font-weight:700}
+.month-day.absent{background:rgba(239,68,68,.15);color:var(--red);font-weight:700}
+.month-day.late{background:rgba(234,179,8,.15);color:var(--yellow);font-weight:700}
+.month-day.leave{background:rgba(59,130,246,.15);color:var(--blue);font-weight:700}
+.month-day.no-school{background:transparent;color:var(--text3);opacity:.4}
+.day-num{font-size:12px}
+.day-status{font-size:9px}
 
-  /* Status buttons */
-  .status-group { display: flex; gap: 6px; }
-  .status-btn {
-    padding: 5px 12px;
-    border-radius: 6px;
-    border: 1.5px solid transparent;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all .15s;
-    background: var(--surface2);
-    color: var(--text3);
-  }
-  .status-btn:hover { color: var(--text); border-color: var(--border); }
-  .status-btn.active-present { background: rgba(34,197,94,.15); color: var(--green); border-color: var(--green); }
-  .status-btn.active-absent  { background: rgba(239,68,68,.15);  color: var(--red);   border-color: var(--red); }
-  .status-btn.active-late    { background: rgba(234,179,8,.15);  color: var(--yellow);border-color: var(--yellow); }
-  .status-btn.active-leave   { background: rgba(59,130,246,.15); color: var(--blue);  border-color: var(--blue); }
+/* Toast */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow);animation:slideIn .3s ease;font-size:14px;max-width:300px}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast.success{border-left:4px solid var(--green)}
+.toast.error{border-left:4px solid var(--red)}
+.toast.info{border-left:4px solid var(--accent)}
 
-  .note-input {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 5px 10px;
-    color: var(--text);
-    font-size: 12px;
-    width: 160px;
-    font-family: inherit;
-    outline: none;
-  }
-  .note-input:focus { border-color: var(--accent); }
+/* Loading */
+.loading-overlay{position:fixed;inset:0;background:rgba(15,17,23,.8);display:flex;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px)}
+.spinner{width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-  /* ── Buttons ── */
-  .btn {
-    padding: 9px 18px;
-    border-radius: 8px;
-    border: none;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all .15s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .btn-primary { background: var(--accent); color: white; }
-  .btn-primary:hover { opacity: .85; }
-  .btn-success { background: var(--green); color: white; }
-  .btn-success:hover { opacity: .85; }
-  .btn-outline {
-    background: transparent;
-    border: 1.5px solid var(--border);
-    color: var(--text2);
-  }
-  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-danger { background: rgba(239,68,68,.15); color: var(--red); border: 1.5px solid var(--red); }
+/* Save float btn */
+.save-btn{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 28px;background:var(--green);color:white;border:none;border-radius:30px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 20px rgba(34,197,94,.4);display:none;align-items:center;gap:8px;z-index:90}
+.save-btn.show{display:flex}
 
-  /* ── Mark all row ── */
-  .mark-all-bar {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 12px 16px;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .mark-all-bar span { font-size: 13px; color: var(--text2); font-weight: 600; }
+/* Summary page */
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.pct-display{font-size:50px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
 
-  /* ── Progress bar ── */
-  .progress-wrap { background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; margin-top: 6px; }
-  .progress-bar  { height: 100%; border-radius: 4px; transition: width .4s; background: var(--accent); }
+/* Empty state */
+.empty-state{text-align:center;padding:50px 20px;color:var(--text3)}
+.empty-state .icon{font-size:40px;margin-bottom:12px}
+.empty-state p{font-size:14px}
 
-  /* ── Toast ── */
-  .toast-container {
-    position: fixed;
-    bottom: 24px; right: 24px;
-    z-index: 999;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .toast {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 18px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: var(--shadow);
-    animation: slideIn .3s ease;
-    font-size: 14px;
-    max-width: 320px;
-  }
-  @keyframes slideIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
-  .toast.success { border-left: 4px solid var(--green); }
-  .toast.error   { border-left: 4px solid var(--red); }
-  .toast.info    { border-left: 4px solid var(--accent); }
+/* Mobile */
+.hamburger{display:none;background:none;border:none;color:var(--text);font-size:22px;cursor:pointer;padding:4px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+.overlay.show{display:block}
 
-  /* ── Students list ── */
-  .student-row td:first-child { padding-left: 20px; }
-  .gender-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 600;
-  }
-  .gender-m { background: rgba(59,130,246,.15); color: #60a5fa; }
-  .gender-f { background: rgba(236,72,153,.15);  color: #f472b6; }
-
-  .grade-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    background: var(--surface2);
-    color: var(--text2);
-  }
-
-  .status-pill {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 700;
-  }
-  .pill-active       { background: rgba(34,197,94,.15); color: var(--green); }
-  .pill-transferred  { background: rgba(239,68,68,.12); color: #f87171; }
-  .pill-graduated    { background: rgba(124,58,237,.15);color: #a78bfa; }
-
-  /* ── Summary page ── */
-  .summary-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 24px;
-  }
-  .pct-display {
-    font-size: 52px;
-    font-weight: 700;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    line-height: 1;
-  }
-
-  /* ── Settings page ── */
-  .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .form-group { margin-bottom: 16px; }
-  .form-label {
-    display: block;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: .05em;
-    margin-bottom: 6px;
-  }
-  .form-input, .form-select {
-    width: 100%;
-    background: var(--bg);
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-size: 14px;
-    font-family: inherit;
-    outline: none;
-    transition: border-color .15s;
-  }
-  .form-input:focus, .form-select:focus { border-color: var(--accent); }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-  /* ── Calendar page ── */
-  .calendar-list { display: flex; flex-direction: column; gap: 8px; }
-  .cal-item {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 12px 16px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-  }
-  .cal-date {
-    text-align: center;
-    min-width: 52px;
-    background: var(--bg);
-    border-radius: 8px;
-    padding: 6px;
-  }
-  .cal-date-day  { font-size: 20px; font-weight: 700; line-height: 1; }
-  .cal-date-mon  { font-size: 11px; color: var(--text3); }
-  .cal-type { font-size: 12px; font-weight: 700; }
-  .type-holiday { color: var(--red); }
-  .type-makeup  { color: var(--green); }
-  .cal-name { font-size: 14px; font-weight: 600; flex: 1; }
-  .cal-term { font-size: 11px; color: var(--text3); background: var(--surface); padding: 2px 8px; border-radius: 6px; }
-
-  /* ── Loading ── */
-  .loading-overlay {
-    position: fixed; inset: 0;
-    background: rgba(15,17,23,.8);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 999;
-    backdrop-filter: blur(4px);
-  }
-  .spinner {
-    width: 40px; height: 40px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin .7s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── Empty state ── */
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text3);
-  }
-  .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
-  .empty-state p { font-size: 14px; }
-
-  /* ── Mobile hamburger ── */
-  .hamburger {
-    display: none;
-    background: none;
-    border: none;
-    color: var(--text);
-    font-size: 22px;
-    cursor: pointer;
-    padding: 4px;
-  }
-
-  @media (max-width: 768px) {
-    .sidebar { transform: translateX(-100%); }
-    .sidebar.open { transform: translateX(0); }
-    .main { margin-left: 0; }
-    .hamburger { display: block; }
-    .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .summary-grid, .settings-grid { grid-template-columns: 1fr; }
-  }
-
-  .overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,.5);
-    z-index: 99;
-  }
-  .overlay.show { display: block; }
-
-  /* ── Save indicator ── */
-  .save-btn {
-    position: fixed;
-    bottom: 24px; left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 28px;
-    background: var(--green);
-    color: white;
-    border: none;
-    border-radius: 30px;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    box-shadow: 0 4px 20px rgba(34,197,94,.4);
-    display: none;
-    align-items: center;
-    gap: 8px;
-    z-index: 90;
-    animation: bounceIn .3s ease;
-  }
-  @keyframes bounceIn { from{transform:translateX(-50%) scale(.8);opacity:0} to{transform:translateX(-50%) scale(1);opacity:1} }
-  .save-btn.show { display: flex; }
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .hamburger{display:block}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .summary-grid,.settings-grid{grid-template-columns:1fr}
+  .detail-stats{grid-template-columns:repeat(2,1fr)}
+}
 </style>
 </head>
 <body>
 
 <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-
-<!-- Loading -->
 <div class="loading-overlay" id="loadingOverlay" style="display:none">
   <div style="text-align:center">
     <div class="spinner"></div>
-    <p style="margin-top:16px;color:var(--text2);font-size:14px">กำลังโหลดข้อมูล...</p>
+    <p style="margin-top:14px;color:var(--text2);font-size:14px">กำลังโหลดข้อมูล...</p>
+  </div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Student Detail Modal -->
+<div class="modal-bg" id="stuDetailModal" onclick="closeModal('stuDetailModal')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px">
+      <div>
+        <div id="detailName" style="font-size:20px;font-weight:700"></div>
+        <div id="detailMeta" style="font-size:13px;color:var(--text3);margin-top:3px"></div>
+      </div>
+      <button onclick="closeModal('stuDetailModal')" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text2);cursor:pointer;font-size:18px">✕</button>
+    </div>
+
+    <!-- สถิติรวม -->
+    <div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">สรุปรายเทอม</div>
+    <div class="detail-stats" id="detailStats"></div>
+
+    <!-- เลือกเดือน -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <span style="font-size:13px;font-weight:700;color:var(--text2);white-space:nowrap">📅 ดูรายเดือน:</span>
+      <select class="select-input" id="detailMonthSel" onchange="renderDetailMonthly()" style="flex:1">
+        <option value="">-- เลือกเดือน --</option>
+        <option value="05/2568">พ.ค. 2568</option>
+        <option value="06/2568">มิ.ย. 2568</option>
+        <option value="07/2568">ก.ค. 2568</option>
+        <option value="08/2568">ส.ค. 2568</option>
+        <option value="09/2568">ก.ย. 2568</option>
+        <option value="10/2568">ต.ค. 2568</option>
+        <option value="11/2568">พ.ย. 2568</option>
+        <option value="12/2568">ธ.ค. 2568</option>
+        <option value="01/2569">ม.ค. 2569</option>
+        <option value="02/2569">ก.พ. 2569</option>
+        <option value="03/2569">มี.ค. 2569</option>
+      </select>
+    </div>
+    <div id="detailMonthlyGrid"></div>
+
+    <!-- ประวัติทั้งหมด -->
+    <div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">ประวัติทั้งหมด</div>
+    <div id="detailHistoryList" style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:10px"></div>
   </div>
 </div>
 
-<!-- Toast -->
-<div class="toast-container" id="toastContainer"></div>
-
-<!-- App -->
 <div class="app">
-
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
       <h1>ระบบเช็คชื่อ<br>นักเรียน</h1>
       <div class="school-badge">🏫 บ้านคลอง 14</div>
     </div>
-
     <nav>
       <div class="nav-section">หลัก</div>
-      <div class="nav-item active" onclick="showPage('dashboard')">
-        <span class="icon">📊</span> ภาพรวม
-      </div>
-      <div class="nav-item" onclick="showPage('attendance')">
-        <span class="icon">✅</span> เช็คชื่อวันนี้
-        <span class="nav-badge" id="pendingBadge" style="display:none">!</span>
-      </div>
-      <div class="nav-item" onclick="showPage('students')">
-        <span class="icon">👨‍🎓</span> รายชื่อนักเรียน
-      </div>
-      <div class="nav-item" onclick="showPage('report')">
-        <span class="icon">📈</span> สรุป/รายงาน
-      </div>
-
+      <div class="nav-item active" onclick="showPage('dashboard')"><span class="icon">📊</span> ภาพรวม</div>
+      <div class="nav-item" onclick="showPage('attendance')"><span class="icon">✅</span> เช็คชื่อ</div>
+      <div class="nav-item" onclick="showPage('students')"><span class="icon">👨‍🎓</span> รายชื่อนักเรียน</div>
+      <div class="nav-item" onclick="showPage('report')"><span class="icon">📈</span> สรุป/รายงาน</div>
       <div class="nav-section">จัดการ</div>
-      <div class="nav-item" onclick="showPage('calendar')">
-        <span class="icon">📆</span> ปฏิทินการเรียน
-      </div>
-      <div class="nav-item" onclick="showPage('settings')">
-        <span class="icon">⚙️</span> ตั้งค่า
-      </div>
+      <div class="nav-item" onclick="showPage('calendar')"><span class="icon">📆</span> ปฏิทินการเรียน</div>
+      <div class="nav-item" onclick="showPage('settings')"><span class="icon">⚙️</span> ตั้งค่า</div>
     </nav>
-
     <div class="sidebar-footer">
       <div class="config-box">
         <label>Apps Script URL</label>
-        <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/..."
-          value="https://script.google.com/macros/s/AKfycbwEURj9tbaV9usml4xmYXbNPHrKrriNklz1xhDqu1N-HM_VFyVqhMLPP9GJsPFIoRWTkg/exec"
-          style="font-size:10px">
+        <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/..." style="font-size:10px">
         <button class="btn-connect" onclick="connectSheets()">🔌 เชื่อมต่อ</button>
         <div class="connection-status">
           <div class="dot" id="connDot"></div>
@@ -709,7 +309,7 @@
       </div>
       <div class="topbar-right">
         <div class="date-chip" id="currentDateChip"></div>
-        <div class="date-chip" style="color:var(--accent);font-weight:600" id="termChip">เทอม 1/2568</div>
+        <div class="term-chip" id="topbarTermChip">เทอม 1/2568</div>
       </div>
     </div>
 
@@ -721,15 +321,13 @@
           <div class="stat-card present">
             <div class="stat-label">มาเรียน</div>
             <div class="stat-value" id="dashPresent">—</div>
-            <div class="stat-sub">จากการเช็คชื่อทั้งหมด</div>
-            <div class="progress-wrap" style="margin-top:10px">
-              <div class="progress-bar" id="presentBar" style="width:0%;background:var(--green)"></div>
-            </div>
+            <div class="stat-sub" id="dashPresentSub">วันนี้</div>
+            <div class="progress-wrap"><div class="progress-bar" id="presentBar" style="width:0%;background:var(--green)"></div></div>
           </div>
           <div class="stat-card absent">
             <div class="stat-label">ขาดเรียน</div>
             <div class="stat-value" id="dashAbsent">—</div>
-            <div class="stat-sub">ต้องติดตาม</div>
+            <div class="stat-sub">วันนี้</div>
           </div>
           <div class="stat-card late">
             <div class="stat-label">มาสาย</div>
@@ -742,70 +340,64 @@
             <div class="stat-sub">วันนี้</div>
           </div>
         </div>
-
         <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">
           <div class="card">
             <div class="card-title">📋 การเช็คชื่อล่าสุด</div>
-            <div id="recentAttList">
-              <div class="empty-state">
-                <div class="icon">🔌</div>
-                <p>เชื่อมต่อ Google Sheets เพื่อดูข้อมูล</p>
-              </div>
-            </div>
+            <div id="recentAttList"><div class="empty-state"><div class="icon">🔌</div><p>เชื่อมต่อ Google Sheets เพื่อดูข้อมูล</p></div></div>
           </div>
           <div class="card">
-            <div class="card-title">⚠️ นักเรียนเสี่ยง</div>
-            <div id="riskList">
-              <div class="empty-state" style="padding:30px 10px">
-                <div class="icon" style="font-size:32px">✅</div>
-                <p style="font-size:13px">ยังไม่มีข้อมูล</p>
-              </div>
-            </div>
+            <div class="card-title">⚠️ นักเรียนขาดวันนี้</div>
+            <div id="riskList"><div class="empty-state" style="padding:30px 10px"><div class="icon" style="font-size:30px">✅</div><p style="font-size:13px">ยังไม่มีข้อมูล</p></div></div>
           </div>
         </div>
       </div>
 
       <!-- ══ ATTENDANCE ══ -->
       <div class="page" id="page-attendance">
+        <!-- เลือกเทอม + วันที่ -->
         <div class="toolbar">
+          <select class="select-input" id="attTerm" onchange="onTermChange()" style="font-weight:700;color:var(--accent)">
+            <option value="T003" data-year="2568" data-range="16/05/2568–10/10/2568">📅 เทอม 1/2568</option>
+            <option value="T004" data-year="2568" data-range="03/11/2568–31/03/2569">📅 เทอม 2/2568</option>
+            <option value="T001" data-year="2567" data-range="16/05/2567–11/10/2567">📅 เทอม 1/2567</option>
+            <option value="T002" data-year="2567" data-range="01/11/2567–31/03/2568">📅 เทอม 2/2567</option>
+          </select>
           <input type="date" class="date-input" id="attDate">
-          <select class="select-input" id="attClass" onchange="filterStudents()">
+          <select class="select-input" id="attClass" onchange="filterAndRender()">
             <option value="">ทุกชั้น</option>
           </select>
-          <select class="select-input" id="attYear" onchange="filterStudents()">
-            <option value="2568">2568</option>
-            <option value="2567">2567</option>
-          </select>
-          <input type="text" class="search-input" placeholder="🔍 ค้นหาชื่อ..." oninput="filterStudents()" id="attSearch">
-          <button class="btn btn-outline" onclick="loadTodayAttendance()">🔄 โหลดข้อมูล</button>
+          <input type="text" class="search-input" placeholder="🔍 ค้นหาชื่อ..." oninput="filterAndRender()" id="attSearch">
+          <button class="btn btn-outline" onclick="loadAttendance()">🔄 โหลด</button>
           <button class="btn btn-primary" onclick="saveAllAttendance()">💾 บันทึกทั้งหมด</button>
         </div>
 
+        <!-- Term info bar -->
+        <div class="term-info-bar">
+          <div class="ti-item"><span class="ti-label">เทอม:</span><span class="ti-val" id="tiTerm">เทอม 1/2568</span></div>
+          <div class="ti-item"><span class="ti-label">ช่วงเวลา:</span><span class="ti-val" id="tiRange">16 พ.ค. – 10 ต.ค. 2568</span></div>
+          <div class="ti-item"><span class="ti-label">บันทึกวันที่:</span><span class="ti-val" style="color:var(--yellow)" id="tiDate"></span></div>
+          <div class="ti-item" style="margin-left:auto"><span class="ti-label">นักเรียน:</span><span class="ti-val" id="tiCount">—</span> คน</div>
+        </div>
+
+        <!-- Mark all -->
         <div class="mark-all-bar">
           <span>ทำเครื่องหมายทั้งหมด:</span>
           <button class="btn btn-outline" onclick="markAll('present')" style="color:var(--green);border-color:var(--green)">✅ มาทุกคน</button>
           <button class="btn btn-outline" onclick="markAll('absent')"  style="color:var(--red);border-color:var(--red)">❌ ขาดทุกคน</button>
-          <span id="attCount" style="margin-left:auto;color:var(--text3);font-size:13px"></span>
+          <span id="attCount" style="margin-left:auto;font-size:13px;color:var(--text3)"></span>
         </div>
 
         <div class="att-table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th style="width:40px">#</th>
-                <th>ชื่อ-นามสกุล</th>
-                <th>ชั้น</th>
-                <th>สถานะ</th>
-                <th>หมายเหตุ</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th style="width:36px">#</th>
+              <th>ชื่อ-นามสกุล</th>
+              <th>ชั้น</th>
+              <th>สถานะ</th>
+              <th>หมายเหตุ</th>
+            </tr></thead>
             <tbody id="attTableBody">
-              <tr><td colspan="5">
-                <div class="empty-state">
-                  <div class="icon">📋</div>
-                  <p>กด "โหลดข้อมูล" เพื่อเริ่มเช็คชื่อ</p>
-                </div>
-              </td></tr>
+              <tr><td colspan="5"><div class="empty-state"><div class="icon">📋</div><p>กด "โหลด" เพื่อเริ่มเช็คชื่อ</p></div></td></tr>
             </tbody>
           </table>
         </div>
@@ -827,34 +419,20 @@
             <option value="transferred_out">ย้ายออก</option>
           </select>
           <input type="text" class="search-input" placeholder="🔍 ค้นหาชื่อ/รหัส..." oninput="filterStudentList()" id="stuSearch">
-          <button class="btn btn-primary" onclick="showAddStudent()">➕ เพิ่มนักเรียน</button>
+          <button class="btn btn-primary" onclick="showPage('settings')">➕ เพิ่มนักเรียน</button>
         </div>
-
-        <div class="card" style="margin-bottom:16px;padding:14px 20px">
+        <div class="card" style="margin-bottom:14px;padding:12px 16px">
           <span id="stuCount" style="font-size:14px;color:var(--text2)">นักเรียนทั้งหมด — คน</span>
         </div>
-
         <div class="att-table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>รหัส</th>
-                <th>ชื่อ-นามสกุล</th>
-                <th>เพศ</th>
-                <th>ชั้น/ห้อง</th>
-                <th>ผู้ปกครอง</th>
-                <th>สถานะ</th>
-                <th>จัดการ</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>#</th><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>เพศ</th>
+              <th>ชั้น/ห้อง</th><th>ผู้ปกครอง</th><th>สถานะ</th>
+              <th>📊 ประวัติ</th><th>จัดการ</th>
+            </tr></thead>
             <tbody id="stuTableBody">
-              <tr><td colspan="8">
-                <div class="empty-state">
-                  <div class="icon">👨‍🎓</div>
-                  <p>เชื่อมต่อ Google Sheets เพื่อดูรายชื่อ</p>
-                </div>
-              </td></tr>
+              <tr><td colspan="9"><div class="empty-state"><div class="icon">👨‍🎓</div><p>เชื่อมต่อ Google Sheets เพื่อดูรายชื่อ</p></div></td></tr>
             </tbody>
           </table>
         </div>
@@ -863,60 +441,36 @@
       <!-- ══ REPORT ══ -->
       <div class="page" id="page-report">
         <div class="toolbar">
-          <select class="select-input" id="repYear">
-            <option value="2568">ปี 2568</option>
-            <option value="2567">ปี 2567</option>
+          <select class="select-input" id="repTerm" onchange="onRepTermChange()">
+            <option value="T003" data-year="2568">เทอม 1/2568</option>
+            <option value="T004" data-year="2568">เทอม 2/2568</option>
+            <option value="T001" data-year="2567">เทอม 1/2567</option>
+            <option value="T002" data-year="2567">เทอม 2/2567</option>
           </select>
-          <select class="select-input" id="repTerm">
-            <option value="T003">เทอม 1/2568</option>
-            <option value="T004">เทอม 2/2568</option>
-            <option value="T001">เทอม 1/2567</option>
-          </select>
-          <select class="select-input" id="repClass">
-            <option value="">ทุกห้อง</option>
-          </select>
+          <select class="select-input" id="repClass"><option value="">ทุกห้อง</option></select>
           <button class="btn btn-primary" onclick="loadReport()">📊 โหลดรายงาน</button>
-          <button class="btn btn-outline" onclick="exportReport()">📥 Export Excel</button>
         </div>
-
-        <div class="summary-grid" style="margin-bottom:20px">
+        <div class="summary-grid">
           <div class="card">
             <div class="card-title">% มาเรียนเฉลี่ย</div>
             <div class="pct-display" id="avgPct">—</div>
-            <div style="color:var(--text3);font-size:13px;margin-top:8px">ทั้งหมด <span id="repTotal">—</span> คน</div>
-            <div class="progress-wrap" style="margin-top:12px;height:8px">
-              <div class="progress-bar" id="avgBar" style="width:0%"></div>
-            </div>
+            <div style="color:var(--text3);font-size:13px;margin-top:6px">ทั้งหมด <span id="repTotal">—</span> คน</div>
+            <div class="progress-wrap" style="margin-top:10px;height:8px"><div class="progress-bar" id="avgBar" style="width:0%"></div></div>
           </div>
           <div class="card">
-            <div class="card-title">⚠️ ต้องติดตาม</div>
-            <div id="riskCount" style="font-size:36px;font-weight:700;color:var(--red)">—</div>
-            <div style="color:var(--text3);font-size:13px;margin-top:8px">นักเรียนที่ขาด ≥ 5 วัน</div>
-            <div id="riskNames" style="margin-top:12px;font-size:13px;color:var(--text2);line-height:1.8"></div>
+            <div class="card-title">⚠️ ต้องติดตาม (ขาด ≥ 5 วัน)</div>
+            <div id="riskCount" style="font-size:34px;font-weight:700;color:var(--red)">—</div>
+            <div id="riskNames" style="margin-top:10px;font-size:13px;color:var(--text2);line-height:1.9"></div>
           </div>
         </div>
-
         <div class="att-table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>ชื่อ-นามสกุล</th>
-                <th>ชั้น</th>
-                <th>มา</th>
-                <th>ขาด</th>
-                <th>สาย</th>
-                <th>ลา</th>
-                <th>% มาเรียน</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>#</th><th>ชื่อ-นามสกุล</th><th>ชั้น</th>
+              <th>มา</th><th>ขาด</th><th>สาย</th><th>ลา</th><th>% มาเรียน</th>
+            </tr></thead>
             <tbody id="repTableBody">
-              <tr><td colspan="8">
-                <div class="empty-state">
-                  <div class="icon">📈</div>
-                  <p>กด "โหลดรายงาน" เพื่อดูสรุป</p>
-                </div>
-              </td></tr>
+              <tr><td colspan="8"><div class="empty-state"><div class="icon">📈</div><p>กด "โหลดรายงาน"</p></div></td></tr>
             </tbody>
           </table>
         </div>
@@ -925,24 +479,16 @@
       <!-- ══ CALENDAR ══ -->
       <div class="page" id="page-calendar">
         <div class="toolbar">
-          <select class="select-input" id="calYear">
-            <option value="2568">ปีการศึกษา 2568</option>
-          </select>
-          <button class="btn btn-primary" onclick="showAddHoliday()">➕ เพิ่มวันหยุด/ชดเชย</button>
+          <button class="btn btn-primary" onclick="showPage('settings')">➕ เพิ่มวันหยุด/ชดเชย</button>
         </div>
-
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
           <div class="card">
             <div class="card-title" style="color:var(--red)">🔴 วันหยุดพิเศษ</div>
-            <div class="calendar-list" id="holidayList">
-              <div class="empty-state" style="padding:30px"><p>ยังไม่มีข้อมูล</p></div>
-            </div>
+            <div class="calendar-list" id="holidayList" style="display:flex;flex-direction:column;gap:8px"><div class="empty-state" style="padding:30px"><p>ยังไม่มีข้อมูล</p></div></div>
           </div>
           <div class="card">
             <div class="card-title" style="color:var(--green)">🟢 วันเรียนชดเชย</div>
-            <div class="calendar-list" id="makeupList">
-              <div class="empty-state" style="padding:30px"><p>ยังไม่มีข้อมูล</p></div>
-            </div>
+            <div class="calendar-list" id="makeupList" style="display:flex;flex-direction:column;gap:8px"><div class="empty-state" style="padding:30px"><p>ยังไม่มีข้อมูล</p></div></div>
           </div>
         </div>
       </div>
@@ -959,141 +505,80 @@
               <input type="text" class="form-input" id="newStuId" placeholder="เช่น 2295" maxlength="4">
             </div>
             <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">ชื่อ</label>
-                <input type="text" class="form-input" id="newStuFirst" placeholder="ชื่อ">
-              </div>
-              <div class="form-group">
-                <label class="form-label">นามสกุล</label>
-                <input type="text" class="form-input" id="newStuLast" placeholder="นามสกุล">
-              </div>
+              <div class="form-group"><label class="form-label">ชื่อ</label><input type="text" class="form-input" id="newStuFirst" placeholder="ชื่อ"></div>
+              <div class="form-group"><label class="form-label">นามสกุล</label><input type="text" class="form-input" id="newStuLast" placeholder="นามสกุล"></div>
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">เพศ</label>
-                <select class="form-select" id="newStuGender">
-                  <option value="ชาย">ชาย</option>
-                  <option value="หญิง">หญิง</option>
-                </select>
+                <select class="form-select" id="newStuGender"><option value="ชาย">ชาย</option><option value="หญิง">หญิง</option></select>
               </div>
               <div class="form-group">
                 <label class="form-label">ชั้น</label>
                 <select class="form-select" id="newStuGrade">
-                  <option>อ.2</option><option>อ.3</option>
-                  <option>ป.1</option><option>ป.2</option><option>ป.3</option>
-                  <option>ป.4</option><option>ป.5</option><option>ป.6</option>
-                  <option>ม.1</option><option>ม.2</option><option>ม.3</option>
+                  <option>อ.2</option><option>อ.3</option><option>ป.1</option><option>ป.2</option><option>ป.3</option>
+                  <option>ป.4</option><option>ป.5</option><option>ป.6</option><option>ม.1</option><option>ม.2</option><option>ม.3</option>
                 </select>
               </div>
             </div>
             <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">ห้อง</label>
-                <input type="text" class="form-input" id="newStuRoom" value="1" maxlength="2">
-              </div>
-              <div class="form-group">
-                <label class="form-label">วันที่ย้ายเข้า</label>
-                <input type="date" class="form-input" id="newStuDate">
-              </div>
+              <div class="form-group"><label class="form-label">ห้อง</label><input type="text" class="form-input" id="newStuRoom" value="1" maxlength="2"></div>
+              <div class="form-group"><label class="form-label">วันที่ย้ายเข้า</label><input type="date" class="form-input" id="newStuDate"></div>
             </div>
-            <div class="form-group">
-              <label class="form-label">ชื่อผู้ปกครอง</label>
-              <input type="text" class="form-input" id="newStuParent" placeholder="ชื่อ-นามสกุลผู้ปกครอง">
-            </div>
-            <div class="form-group">
-              <label class="form-label">เบอร์โทรผู้ปกครอง</label>
-              <input type="tel" class="form-input" id="newStuPhone" placeholder="08X-XXX-XXXX">
-            </div>
+            <div class="form-group"><label class="form-label">ชื่อผู้ปกครอง</label><input type="text" class="form-input" id="newStuParent" placeholder="ชื่อ-นามสกุลผู้ปกครอง"></div>
             <div class="form-group">
               <label class="form-label">เทอมที่เข้า</label>
               <select class="form-select" id="newStuTerm">
-                <option value="T003">เทอม 1/2568</option>
-                <option value="T004">เทอม 2/2568</option>
+                <option value="T003">เทอม 1/2568</option><option value="T004">เทอม 2/2568</option>
               </select>
             </div>
             <button class="btn btn-success" style="width:100%" onclick="addStudent()">✅ บันทึกนักเรียนใหม่</button>
+
+            <!-- ย้ายออก -->
+            <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--border)">
+              <div class="card-title">🚪 บันทึกนักเรียนย้ายออก</div>
+              <div class="form-group"><label class="form-label">เลขประจำตัว หรือชื่อ</label><input type="text" class="form-input" id="transferId" placeholder="2295 หรือ ชื่อนักเรียน"></div>
+              <div class="form-group"><label class="form-label">วันที่ย้ายออก</label><input type="date" class="form-input" id="transferDate"></div>
+              <div class="form-group"><label class="form-label">เหตุผล</label><input type="text" class="form-input" id="transferNote" placeholder="เช่น ย้ายไปโรงเรียนอื่น"></div>
+              <button class="btn btn-danger" style="width:100%" onclick="transferOut()">🚪 บันทึกย้ายออก</button>
+            </div>
           </div>
 
           <!-- เพิ่มวันหยุด -->
           <div class="card">
             <div class="card-title">📆 เพิ่มวันหยุด / วันเรียนชดเชย</div>
-            <div class="form-group">
-              <label class="form-label">วันที่</label>
-              <input type="date" class="form-input" id="newHolDate">
-            </div>
+            <div class="form-group"><label class="form-label">วันที่</label><input type="date" class="form-input" id="newHolDate"></div>
             <div class="form-group">
               <label class="form-label">ประเภท</label>
               <select class="form-select" id="newHolType">
                 <option value="holiday">วันหยุดพิเศษ (นักขัตฤกษ์)</option>
                 <option value="makeup">วันเรียนชดเชย</option>
-                <option value="holiday">วันหยุดต่อเนื่อง</option>
               </select>
             </div>
-            <div class="form-group">
-              <label class="form-label">ชื่อวัน</label>
-              <input type="text" class="form-input" id="newHolName" placeholder="เช่น วันแม่แห่งชาติ">
-            </div>
+            <div class="form-group"><label class="form-label">ชื่อวัน</label><input type="text" class="form-input" id="newHolName" placeholder="เช่น วันแม่แห่งชาติ"></div>
             <div class="form-group">
               <label class="form-label">เทอม</label>
               <select class="form-select" id="newHolTerm">
-                <option value="T003">เทอม 1/2568</option>
-                <option value="T004">เทอม 2/2568</option>
+                <option value="T003">เทอม 1/2568</option><option value="T004">เทอม 2/2568</option>
               </select>
             </div>
-            <div class="form-group">
-              <label class="form-label">หมายเหตุ</label>
-              <input type="text" class="form-input" id="newHolNote" placeholder="(ไม่บังคับ)">
-            </div>
+            <div class="form-group"><label class="form-label">หมายเหตุ</label><input type="text" class="form-input" id="newHolNote" placeholder="(ไม่บังคับ)"></div>
             <button class="btn btn-primary" style="width:100%" onclick="addHoliday()">📅 บันทึกลงปฏิทิน</button>
 
-            <!-- ย้ายออก -->
-            <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
-              <div class="card-title">🚪 บันทึกนักเรียนย้ายออก</div>
+            <!-- Apps Script URL -->
+            <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--border)">
+              <div class="card-title">🔌 Apps Script URL</div>
               <div class="form-group">
-                <label class="form-label">เลขประจำตัว / ชื่อนักเรียน</label>
-                <input type="text" class="form-input" id="transferId" placeholder="กรอกเลข 4 หลัก หรือชื่อ">
+                <label class="form-label">URL</label>
+                <input type="text" class="form-input" id="settingScriptUrl" style="font-size:11px;font-family:monospace" placeholder="https://script.google.com/macros/s/.../exec">
               </div>
               <div class="form-group">
-                <label class="form-label">วันที่ย้ายออก</label>
-                <input type="date" class="form-input" id="transferDate">
+                <label class="form-label">ปีการศึกษาปัจจุบัน</label>
+                <select class="form-select" id="settingYear"><option value="2568">2568</option><option value="2567">2567</option></select>
               </div>
-              <div class="form-group">
-                <label class="form-label">เหตุผล</label>
-                <input type="text" class="form-input" id="transferNote" placeholder="เช่น ย้ายไปโรงเรียนอื่น">
-              </div>
-              <button class="btn btn-danger" style="width:100%" onclick="transferOut()">🚪 บันทึกย้ายออก</button>
+              <button class="btn btn-primary" style="width:100%" onclick="saveSettings()">💾 บันทึกและเชื่อมต่อ</button>
             </div>
           </div>
-
-        </div>
-
-        <!-- Google Sheets config -->
-        <div class="card" style="margin-top:20px">
-          <div class="card-title">🔌 การตั้งค่า Google Apps Script</div>
-          <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
-            <div class="form-group">
-              <label class="form-label">Apps Script URL</label>
-              <input type="text" class="form-input" id="settingScriptUrl"
-                value="https://script.google.com/macros/s/AKfycbwEURj9tbaV9usml4xmYXbNPHrKrriNklz1xhDqu1N-HM_VFyVqhMLPP9GJsPFIoRWTkg/exec"
-                placeholder="https://script.google.com/macros/s/.../exec">
-            </div>
-            <div class="form-group">
-              <label class="form-label">ปีการศึกษาปัจจุบัน</label>
-              <select class="form-select" id="settingYear">
-                <option value="2568">2568</option>
-                <option value="2567">2567</option>
-              </select>
-            </div>
-          </div>
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:4px">
-            <p style="font-size:13px;color:var(--text2);font-weight:600;margin-bottom:8px">📋 วิธีอัปเดต Apps Script URL</p>
-            <ol style="font-size:13px;color:var(--text3);line-height:2;padding-left:18px">
-              <li>เปิด Google Sheets → Extensions → Apps Script</li>
-              <li>Deploy → Manage deployments → คัดลอก URL</li>
-              <li>วาง URL ด้านบน แล้วกดบันทึก</li>
-            </ol>
-          </div>
-          <button class="btn btn-primary" style="margin-top:12px" onclick="saveSettings()">💾 บันทึกและเชื่อมต่อ</button>
         </div>
       </div>
 
@@ -1101,132 +586,120 @@
   </main>
 </div>
 
+<button class="save-btn" id="saveFloatBtn" onclick="saveAllAttendance()">💾 บันทึก 0 รายการ</button>
+
 <script>
-// ═══════════════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════════════
+// ═══════════════════════ CONFIG ═══════════════════════
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwEURj9tbaV9usml4xmYXbNPHrKrriNklz1xhDqu1N-HM_VFyVqhMLPP9GJsPFIoRWTkg/exec';
+
 let CONFIG = {
-  scriptUrl: localStorage.getItem('scriptUrl') || 'https://script.google.com/macros/s/AKfycbwEURj9tbaV9usml4xmYXbNPHrKrriNklz1xhDqu1N-HM_VFyVqhMLPP9GJsPFIoRWTkg/exec',
+  scriptUrl: localStorage.getItem('scriptUrl') || SCRIPT_URL,
   year:      localStorage.getItem('year')      || '2568',
   connected: false,
 };
 
-// Sheets tab names
-const SHEETS = {
-  students:    'room_history',
-  attendance:  '✅ เช็คชื่อ',
-  calendar:    '📆 ปฏิทิน_2568',
-  terms:       '📅 เทอม',
+const TERMS = {
+  T003: { label:'เทอม 1/2568', year:'2568', start:'16/05/2568', end:'10/10/2568', range:'16 พ.ค. – 10 ต.ค. 2568' },
+  T004: { label:'เทอม 2/2568', year:'2568', start:'03/11/2568', end:'31/03/2569', range:'3 พ.ย. 2568 – 31 มี.ค. 2569' },
+  T001: { label:'เทอม 1/2567', year:'2567', start:'16/05/2567', end:'11/10/2567', range:'16 พ.ค. – 11 ต.ค. 2567' },
+  T002: { label:'เทอม 2/2567', year:'2567', start:'01/11/2567', end:'31/03/2568', range:'1 พ.ย. 2567 – 31 มี.ค. 2568' },
 };
 
-// ═══════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════
+const THAI_MONTHS = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const THAI_MONTHS_FULL = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+let studentsData  = [];
+let attendanceData = {};   // { student_id: { status, note } }
+let allAttendance  = [];   // raw rows from sheet for detail view
+let holidaysData   = [];
+let changedRows    = new Set();
+let currentTermId  = 'T003';
+let openStudentId  = null;
+
+// ════════════════════ INIT ════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   updateDateChip();
   setInterval(updateDateChip, 60000);
   setTodayDate();
-  loadFromStorage();
-  populateSampleData();  // โหลดข้อมูลตัวอย่าง
-  if (CONFIG.scriptUrl) {
-    connectSheets();
-  }
+  document.getElementById('scriptUrlInput').value  = CONFIG.scriptUrl;
+  document.getElementById('settingScriptUrl').value = CONFIG.scriptUrl;
+  populateSampleStudents();
+  populateSampleHolidays();
+  connectSheets();
 });
 
 function updateDateChip() {
-  const now = new Date();
-  const thaiMonths = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.',
-                      'ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  const d = `${now.getDate()} ${thaiMonths[now.getMonth()]} ${now.getFullYear()+543}`;
-  document.getElementById('currentDateChip').textContent = d;
+  const n = new Date();
+  document.getElementById('currentDateChip').textContent =
+    `${n.getDate()} ${THAI_MONTHS[n.getMonth()+1]} ${n.getFullYear()+543}`;
 }
 
 function setTodayDate() {
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('attDate').value = today;
-  document.getElementById('newStuDate').value = today;
-  document.getElementById('newHolDate').value = today;
-  document.getElementById('transferDate').value = today;
+  const t = new Date().toISOString().split('T')[0];
+  ['attDate','newStuDate','newHolDate','transferDate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = t;
+  });
 }
 
-function loadFromStorage() {
-  const el = document.getElementById('scriptUrlInput');
-  if (el) el.value = CONFIG.scriptUrl;
-}
-
-// ═══════════════════════════════════════════════════
-// SAMPLE DATA (ใช้เมื่อยังไม่ได้เชื่อม Sheets)
-// ═══════════════════════════════════════════════════
-const SAMPLE_STUDENTS = [
-  {id:'2262',name:'เด็กชายชาคริส มณีดำ',   gender:'ชาย',  grade:'อ.2',room:'1',parent:'ชีวา มณีดำ',   status:'active',year:'2568'},
-  {id:'2263',name:'เด็กชายณัฐนนท์ แซ่กอ',  gender:'ชาย',  grade:'อ.2',room:'1',parent:'นนทินี เรืองคล้าย',status:'active',year:'2568'},
-  {id:'2266',name:'เด็กชายพันธการณ์ เซ็นโส', gender:'ชาย',  grade:'อ.2',room:'1',parent:'อินธิรา บินกาซัน',status:'active',year:'2568'},
-  {id:'2270',name:'เด็กหญิงสุภาพร ใจดี',    gender:'หญิง', grade:'ป.1',room:'1',parent:'สมใจ ใจดี',     status:'active',year:'2568'},
-  {id:'2271',name:'เด็กชายวิทวัส รักเรียน', gender:'ชาย',  grade:'ป.1',room:'1',parent:'สมศักดิ์ รักเรียน',status:'active',year:'2568'},
-  {id:'2272',name:'เด็กหญิงนภัสสร สดใส',   gender:'หญิง', grade:'ป.2',room:'1',parent:'สมหมาย สดใส',   status:'active',year:'2568'},
-  {id:'2275',name:'เด็กชายอิทธิพล เก่งมาก', gender:'ชาย',  grade:'ป.3',room:'1',parent:'วิไล เก่งมาก',   status:'active',year:'2568'},
-  {id:'2280',name:'เด็กหญิงพิมพ์ชนก ดีงาม', gender:'หญิง', grade:'ป.4',room:'1',parent:'ประนอม ดีงาม',   status:'active',year:'2568'},
-  {id:'2283',name:'เด็กชายธนวัฒน์ มั่นคง',  gender:'ชาย',  grade:'ป.5',room:'1',parent:'สมชาย มั่นคง',  status:'active',year:'2568'},
-  {id:'2290',name:'เด็กหญิงกมลชนก สุขใจ',  gender:'หญิง', grade:'ป.6',room:'1',parent:'สุดา สุขใจ',    status:'active',year:'2568'},
-  {id:'2291',name:'เด็กชายภูวดล แสงใส',    gender:'ชาย',  grade:'ม.1',room:'1',parent:'สุรชัย แสงใส',  status:'active',year:'2568'},
-  {id:'2292',name:'เด็กหญิงอรวรรณ ใหม่ใจ', gender:'หญิง', grade:'ม.2',room:'1',parent:'วันดี ใหม่ใจ',  status:'active',year:'2568'},
-  {id:'2293',name:'เด็กชายนันทวัฒน์ ชัยดี', gender:'ชาย',  grade:'ม.3',room:'1',parent:'ชาตรี ชัยดี',   status:'active',year:'2568'},
-  {id:'2294',name:'เด็กหญิงณัฐธิดา ศรีสุข', gender:'หญิง', grade:'ม.3',room:'1',parent:'ศิริพร ศรีสุข',  status:'active',year:'2568'},
-];
-
-const SAMPLE_HOLIDAYS = [
-  {date:'02/06/2568',name:'วันวิสาขบูชา',     type:'holiday',term:'T003'},
-  {date:'10/07/2568',name:'วันอาสาฬหบูชา',   type:'holiday',term:'T003'},
-  {date:'11/07/2568',name:'วันเข้าพรรษา',     type:'holiday',term:'T003'},
-  {date:'28/07/2568',name:'วันเฉลิมฯ ร.10',  type:'holiday',term:'T003'},
-  {date:'12/08/2568',name:'วันแม่แห่งชาติ',  type:'holiday',term:'T003'},
-  {date:'16/08/2568',name:'เรียนชดเชยวันแม่', type:'makeup', term:'T003'},
-  {date:'13/10/2568',name:'วันคล้ายวันสวรรคต ร.9',type:'holiday',term:'T003'},
-  {date:'23/10/2568',name:'วันปิยมหาราช',     type:'holiday',term:'T003'},
-];
-
-let studentsData = [...SAMPLE_STUDENTS];
-let attendanceData = {};
-let holidaysData = [...SAMPLE_HOLIDAYS];
-let changedRows = new Set();
-
-function populateSampleData() {
+// ════════════════════ SAMPLE DATA ════════════════════
+function populateSampleStudents() {
+  studentsData = [
+    {id:'2262',name:'เด็กชายชาคริส มณีดำ',   gender:'ชาย',  grade:'อ.2',room:'1',parent:'ชีวา มณีดำ',   status:'active',year:'2568'},
+    {id:'2263',name:'เด็กชายณัฐนนท์ แซ่กอ',  gender:'ชาย',  grade:'อ.2',room:'1',parent:'นนทินี เรืองคล้าย',status:'active',year:'2568'},
+    {id:'2270',name:'เด็กหญิงสุภาพร ใจดี',    gender:'หญิง', grade:'ป.1',room:'1',parent:'สมใจ ใจดี',     status:'active',year:'2568'},
+    {id:'2271',name:'เด็กชายวิทวัส รักเรียน', gender:'ชาย',  grade:'ป.1',room:'1',parent:'สมศักดิ์ รักเรียน',status:'active',year:'2568'},
+    {id:'2275',name:'เด็กชายอิทธิพล เก่งมาก', gender:'ชาย',  grade:'ป.3',room:'1',parent:'วิไล เก่งมาก',   status:'active',year:'2568'},
+    {id:'2280',name:'เด็กหญิงพิมพ์ชนก ดีงาม', gender:'หญิง', grade:'ป.4',room:'1',parent:'ประนอม ดีงาม',   status:'active',year:'2568'},
+    {id:'2283',name:'เด็กชายธนวัฒน์ มั่นคง',  gender:'ชาย',  grade:'ป.5',room:'1',parent:'สมชาย มั่นคง',  status:'active',year:'2568'},
+    {id:'2290',name:'เด็กหญิงกมลชนก สุขใจ',  gender:'หญิง', grade:'ป.6',room:'1',parent:'สุดา สุขใจ',    status:'active',year:'2568'},
+    {id:'2291',name:'เด็กชายภูวดล แสงใส',    gender:'ชาย',  grade:'ม.1',room:'1',parent:'สุรชัย แสงใส',  status:'active',year:'2568'},
+    {id:'2294',name:'เด็กหญิงณัฐธิดา ศรีสุข', gender:'หญิง', grade:'ม.3',room:'1',parent:'ศิริพร ศรีสุข',  status:'active',year:'2568'},
+  ];
   renderStudentList();
-  renderCalendar();
-  renderDashboard();
   populateClassDropdowns();
 }
 
-// ═══════════════════════════════════════════════════
-// GOOGLE SHEETS CONNECTION
-// ═══════════════════════════════════════════════════
+function populateSampleHolidays() {
+  holidaysData = [
+    {date:'02/06/2568',name:'วันวิสาขบูชา',      type:'holiday',term:'T003'},
+    {date:'10/07/2568',name:'วันอาสาฬหบูชา',    type:'holiday',term:'T003'},
+    {date:'11/07/2568',name:'วันเข้าพรรษา',      type:'holiday',term:'T003'},
+    {date:'28/07/2568',name:'วันเฉลิมฯ ร.10',   type:'holiday',term:'T003'},
+    {date:'12/08/2568',name:'วันแม่แห่งชาติ',   type:'holiday',term:'T003'},
+    {date:'16/08/2568',name:'เรียนชดเชยวันแม่',  type:'makeup', term:'T003'},
+    {date:'13/10/2568',name:'วันคล้ายวันสวรรคต ร.9',type:'holiday',term:'T003'},
+    {date:'23/10/2568',name:'วันปิยมหาราช',      type:'holiday',term:'T003'},
+  ];
+  renderCalendar();
+}
+
+// ════════════════════ CONNECTION ════════════════════
 async function connectSheets() {
-  setConnStatus('loading', 'กำลังเชื่อมต่อ...');
+  setConnStatus('loading','กำลังเชื่อมต่อ...');
   showLoading(true);
   try {
-    // ใช้ GET ดึง room_history แถวแรกเพื่อทดสอบการเชื่อมต่อ
-    const res  = await fetch(`${CONFIG.scriptUrl}?sheet=${encodeURIComponent('🏫 room_history')}&range=A1:B2`);
+    const url = CONFIG.scriptUrl;
+    const res  = await fetch(`${url}?sheet=${encodeURIComponent('🏫 room_history')}&range=A1:B2`);
     const data = await res.json();
     if (data.error) throw new Error(data.error);
-
     CONFIG.connected = true;
-    setConnStatus('connected', 'เชื่อมต่อแล้ว ✓');
-    toast('✅ เชื่อมต่อ Google Sheets สำเร็จ', 'success');
-
+    setConnStatus('connected','เชื่อมต่อแล้ว ✓');
+    toast('✅ เชื่อมต่อ Google Sheets สำเร็จ','success');
     await loadStudentsFromSheets();
+    await loadAttendanceAll();
     await loadCalendarFromSheets();
     renderDashboard();
   } catch(e) {
-    setConnStatus('error', 'เชื่อมต่อไม่สำเร็จ');
-    toast(`❌ ${e.message}`, 'error');
-    console.error(e);
+    setConnStatus('error','เชื่อมต่อไม่สำเร็จ');
+    toast(`❌ ${e.message}`,'error');
   } finally {
     showLoading(false);
   }
 }
 
-async function fetchSheet(sheetName, range='') {
-  const params = new URLSearchParams({ sheet: sheetName });
+async function gasGet(sheet, range='') {
+  const params = new URLSearchParams({ sheet });
   if (range) params.set('range', range);
   const res  = await fetch(`${CONFIG.scriptUrl}?${params}`);
   const data = await res.json();
@@ -1234,361 +707,150 @@ async function fetchSheet(sheetName, range='') {
   return data.values || [];
 }
 
-async function appendToSheet(sheetName, values) {
+async function gasPost(body) {
   const res = await fetch(CONFIG.scriptUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ action: 'append', sheet: sheetName, values }),
+    method:'POST',
+    headers:{'Content-Type':'text/plain'},
+    body: JSON.stringify(body),
   });
   const data = await res.json();
   if (data.error) throw new Error(data.error);
   return data;
 }
 
-// ═══════════════════════════════════════════════════
-// LOAD DATA FROM SHEETS
-// ═══════════════════════════════════════════════════
+// ════════════════════ LOAD FROM SHEETS ════════════════════
 async function loadStudentsFromSheets() {
-  try {
-    const rows = await fetchSheet('🏫 room_history', 'A4:J1000');
-    if (!rows.length) return;
+  const rows = await gasGet('🏫 room_history','A4:J2000');
+  if (!rows.length) return;
+  studentsData = rows.filter(r => r[0] && r[3]).map(r => ({
+    id:r[0]||'', name:r[1]||'', gender:r[2]||'', year:r[3]||'',
+    grade:r[4]||'', room:r[5]||'', status:r[6]||'active', parent:r[8]||'',
+  }));
+  toast(`โหลดนักเรียน ${studentsData.length} คน`,'info');
+  renderStudentList();
+  populateClassDropdowns();
+}
 
-    studentsData = rows
-      .filter(r => r[0] && r[3]) // มี student_id และ year
-      .map(r => ({
-        id:      r[0] || '',
-        name:    r[1] || '',
-        gender:  r[2] || '',
-        year:    r[3] || '',
-        grade:   r[4] || '',
-        room:    r[5] || '',
-        status:  r[6] || 'active',
-        teacher: r[7] || '',
-        parent:  '',
-      }));
-
-    toast(`โหลดนักเรียน ${studentsData.length} คน`, 'success');
-    renderStudentList();
-    populateClassDropdowns();
-  } catch(e) {
-    console.error('loadStudents:', e);
-  }
+async function loadAttendanceAll() {
+  const rows = await gasGet('✅ เช็คชื่อ','A3:G20000');
+  allAttendance = rows.filter(r => r[1]).map(r => ({
+    attId:r[0]||'', studentId:r[1]||'', termId:r[2]||'',
+    year:r[3]||'',  date:r[4]||'',      status:r[5]||'', note:r[6]||'',
+  }));
+  renderDashboard();
 }
 
 async function loadCalendarFromSheets() {
-  try {
-    const rows = await fetchSheet('📆 ปฏิทิน_2568', 'A3:F100');
-    if (!rows.length) return;
-    holidaysData = rows
-      .filter(r => r[0])
-      .map(r => ({
-        date: r[0] || '', name: r[1] || '',
-        type: r[2] || 'holiday', term: r[3] || '',
-      }));
-    renderCalendar();
-  } catch(e) {
-    console.error('loadCalendar:', e);
-  }
+  const rows = await gasGet('📆 ปฏิทิน_2568','A3:F100');
+  if (!rows.length) return;
+  holidaysData = rows.filter(r=>r[0]).map(r=>({
+    date:r[0]||'', name:r[1]||'', term:r[2]||'', type:r[3]||'holiday', note:r[4]||'',
+  }));
+  renderCalendar();
 }
 
-async function loadTodayAttendance() {
+// ════════════════════ TERM LOGIC ════════════════════
+function onTermChange() {
+  const sel = document.getElementById('attTerm');
+  currentTermId = sel.value;
+  const term = TERMS[currentTermId];
+  CONFIG.year = term.year;
+  // update topbar chip
+  document.getElementById('topbarTermChip').textContent = term.label;
+  document.getElementById('tiTerm').textContent  = term.label;
+  document.getElementById('tiRange').textContent = term.range;
+  // reset attendance state for new term
+  attendanceData = {};
+  changedRows.clear();
+  document.getElementById('saveFloatBtn').classList.remove('show');
+  filterAndRender();
+}
+
+function onRepTermChange() {
+  const sel = document.getElementById('repTerm');
+  const term = TERMS[sel.value];
+  if (term) document.getElementById('repClass').value = '';
+}
+
+// ════════════════════ ATTENDANCE ════════════════════
+async function loadAttendance() {
   const date  = document.getElementById('attDate').value;
   const grade = document.getElementById('attClass').value;
-  const year  = document.getElementById('attYear').value;
+  const term  = TERMS[currentTermId];
 
   // กรองนักเรียนตาม year + ชั้น
-  let filtered = studentsData.filter(s => s.status === 'active' && s.year === year);
-  if (grade) filtered = filtered.filter(s => s.grade === grade);
+  let filtered = studentsData.filter(s => s.status==='active' && s.year===term.year);
+  if (grade) filtered = filtered.filter(s => s.grade===grade);
 
-  // สร้าง attendance state
+  // init state
   filtered.forEach(s => {
-    if (!attendanceData[s.id]) {
-      attendanceData[s.id] = { status: '', note: '' };
-    }
+    if (!attendanceData[s.id]) attendanceData[s.id] = { status:'', note:'' };
   });
 
-  // ถ้าเชื่อม Sheets อยู่ ลองดึงข้อมูลที่มีอยู่
-  if (CONFIG.connected) {
-    try {
-      showLoading(true);
-      const rows = await fetchSheet('✅ เช็คชื่อ', 'A3:G10000');
-      const thaiDate = toThaiDate(date);
-      rows.forEach(r => {
-        if (r[4] === thaiDate || r[4] === date) {
-          attendanceData[r[1]] = { status: r[5] || '', note: r[6] || '' };
-        }
-      });
-    } catch(e) {
-      console.error(e);
-    } finally {
-      showLoading(false);
-    }
+  // ถ้าเชื่อม Sheets ดึงข้อมูลวันนั้นมาแสดง
+  if (CONFIG.connected && date) {
+    const thaiDate = toThaiDate(date);
+    allAttendance.filter(a => a.date===thaiDate && a.termId===currentTermId)
+      .forEach(a => { attendanceData[a.studentId] = { status:a.status, note:a.note }; });
   }
 
   renderAttTable(filtered);
-  document.getElementById('attCount').textContent =
-    `${filtered.length} คน | เลือกแล้ว ${countChecked()} คน`;
+  const tDate = toThaiDate(date);
+  document.getElementById('tiDate').textContent = tDate;
 }
 
-// ═══════════════════════════════════════════════════
-// RENDER FUNCTIONS
-// ═══════════════════════════════════════════════════
+function filterAndRender() {
+  const grade  = document.getElementById('attClass').value;
+  const search = document.getElementById('attSearch').value.toLowerCase();
+  const term   = TERMS[currentTermId];
+  let filtered = studentsData.filter(s => s.status==='active' && s.year===term.year);
+  if (grade)  filtered = filtered.filter(s => s.grade===grade);
+  if (search) filtered = filtered.filter(s => s.name.toLowerCase().includes(search) || s.id.includes(search));
+  renderAttTable(filtered);
+}
+
 function renderAttTable(students) {
   const tbody = document.getElementById('attTableBody');
+  document.getElementById('tiCount').textContent = students.length;
   if (!students.length) {
     tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="icon">👨‍🎓</div><p>ไม่พบนักเรียน</p></div></td></tr>`;
     return;
   }
-  tbody.innerHTML = students.map((s, i) => {
-    const att = attendanceData[s.id] || { status: '', note: '' };
-    const st  = att.status;
-    return `
-    <tr class="student-row">
+  tbody.innerHTML = students.map((s,i) => {
+    const att = attendanceData[s.id] || {status:'',note:''};
+    return `<tr>
       <td style="color:var(--text3);text-align:center">${i+1}</td>
-      <td>
-        <div class="student-name">${s.name}</div>
-        <div class="student-id">${s.id}</div>
-      </td>
+      <td><div class="student-name">${s.name}</div><div class="student-id">${s.id}</div></td>
       <td><span class="grade-badge">${s.grade}/${s.room}</span></td>
-      <td>
-        <div class="status-group">
-          ${['present','absent','late','leave'].map(code => {
-            const labels = {present:'มา',absent:'ขาด',late:'สาย',leave:'ลา'};
-            const active = st === code ? `active-${code}` : '';
-            return `<button class="status-btn ${active}" onclick="setStatus('${s.id}','${code}',this)">${labels[code]}</button>`;
-          }).join('')}
-        </div>
-      </td>
-      <td>
-        <input class="note-input" placeholder="หมายเหตุ..."
-          value="${att.note || ''}"
-          onchange="setNote('${s.id}',this.value)">
-      </td>
+      <td><div class="status-group">
+        ${['present','absent','late','leave'].map(code => {
+          const lbl = {present:'มา',absent:'ขาด',late:'สาย',leave:'ลา'}[code];
+          const act = att.status===code ? `active-${code}` : '';
+          return `<button class="status-btn ${act}" onclick="setStatus('${s.id}','${code}',this)">${lbl}</button>`;
+        }).join('')}
+      </div></td>
+      <td><input class="note-input" placeholder="หมายเหตุ..." value="${att.note||''}" onchange="setNote('${s.id}',this.value)"></td>
     </tr>`;
   }).join('');
-
-  document.getElementById('attCount').textContent =
-    `${students.length} คน | เช็คแล้ว ${countChecked()} คน`;
-  updateDashboardStats();
+  updateAttCount(students.length);
+  renderDashboard();
 }
 
-function renderStudentList() {
-  const year    = document.getElementById('stuYear')?.value   || '2568';
-  const grade   = document.getElementById('stuClass')?.value  || '';
-  const status  = document.getElementById('stuStatus')?.value || '';
-  const search  = document.getElementById('stuSearch')?.value?.toLowerCase() || '';
-
-  let filtered = studentsData.filter(s => s.year === year);
-  if (grade)  filtered = filtered.filter(s => s.grade === grade);
-  if (status) filtered = filtered.filter(s => s.status === status);
-  if (search) filtered = filtered.filter(s =>
-    s.name.toLowerCase().includes(search) || s.id.includes(search));
-
-  document.getElementById('stuCount').textContent =
-    `ปี ${year} — พบ ${filtered.length} คน จากทั้งหมด ${studentsData.filter(s=>s.year===year).length} คน`;
-
-  const tbody = document.getElementById('stuTableBody');
-  if (!filtered.length) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">👨‍🎓</div><p>ไม่พบนักเรียน</p></div></td></tr>`;
-    return;
-  }
-  tbody.innerHTML = filtered.map((s, i) => {
-    const gBadge = s.gender === 'ชาย'
-      ? `<span class="gender-badge gender-m">ชาย</span>`
-      : `<span class="gender-badge gender-f">หญิง</span>`;
-    const sBadge = s.status === 'active'
-      ? `<span class="status-pill pill-active">active</span>`
-      : s.status === 'transferred_out'
-        ? `<span class="status-pill pill-transferred">ย้ายออก</span>`
-        : `<span class="status-pill pill-graduated">จบแล้ว</span>`;
-    return `
-    <tr>
-      <td style="color:var(--text3);text-align:center">${i+1}</td>
-      <td><code style="color:var(--accent);font-size:13px">${s.id}</code></td>
-      <td class="student-name">${s.name}</td>
-      <td>${gBadge}</td>
-      <td><span class="grade-badge">${s.grade}/${s.room}</span></td>
-      <td style="font-size:13px;color:var(--text2)">${s.parent || '—'}</td>
-      <td>${sBadge}</td>
-      <td>
-        <button class="btn btn-outline" style="padding:4px 10px;font-size:12px"
-          onclick="transferOutStudent('${s.id}')">ย้ายออก</button>
-      </td>
-    </tr>`;
-  }).join('');
-}
-
-function renderCalendar() {
-  const hList = document.getElementById('holidayList');
-  const mList = document.getElementById('makeupList');
-
-  const holidays = holidaysData.filter(h => h.type === 'holiday');
-  const makeups  = holidaysData.filter(h => h.type === 'makeup');
-
-  hList.innerHTML = holidays.length
-    ? holidays.map(h => calItem(h)).join('')
-    : `<div class="empty-state" style="padding:30px"><p>ยังไม่มีวันหยุด</p></div>`;
-
-  mList.innerHTML = makeups.length
-    ? makeups.map(h => calItem(h)).join('')
-    : `<div class="empty-state" style="padding:30px"><p>ยังไม่มีวันชดเชย</p></div>`;
-}
-
-function calItem(h) {
-  const parts = h.date.split('/');
-  const day   = parts[0] || '';
-  const mon   = parts[1] ? thaiMonShort(parseInt(parts[1])) : '';
-  const typeLabel = h.type === 'holiday' ? 'วันหยุด' : 'ชดเชย';
-  const typeClass = h.type === 'holiday' ? 'type-holiday' : 'type-makeup';
-  return `
-  <div class="cal-item">
-    <div class="cal-date">
-      <div class="cal-date-day">${day}</div>
-      <div class="cal-date-mon">${mon}</div>
-    </div>
-    <div style="flex:1">
-      <div class="cal-name">${h.name}</div>
-      <div style="display:flex;gap:8px;margin-top:4px">
-        <span class="cal-type ${typeClass}">${typeLabel}</span>
-        <span class="cal-term">${h.term}</span>
-      </div>
-    </div>
-    <button onclick="deleteHoliday('${h.date}')"
-      style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:4px">✕</button>
-  </div>`;
-}
-
-function renderDashboard() {
-  const year = CONFIG.year;
-  const yearStudents = studentsData.filter(s => s.year === year && s.status === 'active');
-  const allAtt = Object.values(attendanceData);
-  const present = allAtt.filter(a => a.status === 'present').length;
-  const absent  = allAtt.filter(a => a.status === 'absent').length;
-  const late    = allAtt.filter(a => a.status === 'late').length;
-  const leave   = allAtt.filter(a => a.status === 'leave').length;
-  const total   = allAtt.filter(a => a.status).length || yearStudents.length || 1;
-
-  document.getElementById('dashPresent').textContent = present || yearStudents.length;
-  document.getElementById('dashAbsent').textContent  = absent;
-  document.getElementById('dashLate').textContent    = late;
-  document.getElementById('dashLeave').textContent   = leave;
-  document.getElementById('presentBar').style.width  =
-    `${Math.round((present / total) * 100)}%`;
-
-  // recent
-  const recentList = document.getElementById('recentAttList');
-  const recent = yearStudents.slice(0, 6);
-  if (recent.length) {
-    recentList.innerHTML = recent.map(s => {
-      const att = attendanceData[s.id];
-      const stLabel = att?.status
-        ? { present:'✅ มา', absent:'❌ ขาด', late:'⏰ สาย', leave:'📋 ลา' }[att.status]
-        : '⬜ ยังไม่เช็ค';
-      return `
-      <div style="display:flex;justify-content:space-between;align-items:center;
-                  padding:10px 0;border-bottom:1px solid var(--border)">
-        <div>
-          <div style="font-size:14px;font-weight:600">${s.name}</div>
-          <div style="font-size:12px;color:var(--text3)">${s.grade}/${s.room}</div>
-        </div>
-        <span style="font-size:13px">${stLabel}</span>
-      </div>`;
-    }).join('');
-  }
-
-  // risk — นักเรียนที่ขาด
-  const riskList = document.getElementById('riskList');
-  const risk = yearStudents.filter(s => (attendanceData[s.id]?.status === 'absent'));
-  riskList.innerHTML = risk.length
-    ? risk.map(s => `
-      <div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
-        <span style="font-weight:600">${s.name}</span>
-        <span style="color:var(--red);margin-left:8px">ขาด</span>
-      </div>`).join('')
-    : `<div class="empty-state" style="padding:30px"><div class="icon" style="font-size:28px">✅</div><p style="font-size:13px">ไม่มีนักเรียนเสี่ยง</p></div>`;
-}
-
-function loadReport() {
-  const year  = document.getElementById('repYear').value;
-  const term  = document.getElementById('repTerm').value;
-  const grade = document.getElementById('repClass').value;
-
-  let filtered = studentsData.filter(s => s.year === year && s.status === 'active');
-  if (grade) filtered = filtered.filter(s => s.grade === grade);
-
-  let totalPresent = 0;
-  let riskStudents = [];
-
-  const tbody = document.getElementById('repTableBody');
-  tbody.innerHTML = filtered.map((s, i) => {
-    const att    = attendanceData[s.id];
-    const p = Math.floor(Math.random() * 5) + 15;
-    const a = Math.floor(Math.random() * 4);
-    const l = Math.floor(Math.random() * 2);
-    const lv= Math.floor(Math.random() * 2);
-    const tot = p + a + l + lv;
-    const pct = tot ? Math.round((p/tot)*100) : 0;
-    totalPresent += pct;
-    if (a >= 3) riskStudents.push(s.name);
-    const pctColor = pct >= 80 ? 'var(--green)' : pct >= 70 ? 'var(--yellow)' : 'var(--red)';
-    return `
-    <tr>
-      <td style="color:var(--text3);text-align:center">${i+1}</td>
-      <td class="student-name">${s.name}</td>
-      <td><span class="grade-badge">${s.grade}/${s.room}</span></td>
-      <td style="color:var(--green);font-weight:600;text-align:center">${p}</td>
-      <td style="color:var(--red);font-weight:600;text-align:center">${a}</td>
-      <td style="color:var(--yellow);text-align:center">${l}</td>
-      <td style="color:var(--blue);text-align:center">${lv}</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="color:${pctColor};font-weight:700;min-width:36px">${pct}%</span>
-          <div style="flex:1;background:var(--surface2);border-radius:4px;height:6px;overflow:hidden">
-            <div style="width:${pct}%;height:100%;background:${pctColor};border-radius:4px"></div>
-          </div>
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-
-  const avg = filtered.length ? Math.round(totalPresent / filtered.length) : 0;
-  document.getElementById('avgPct').textContent = `${avg}%`;
-  document.getElementById('repTotal').textContent = filtered.length;
-  document.getElementById('avgBar').style.width = `${avg}%`;
-  document.getElementById('riskCount').textContent = riskStudents.length;
-  document.getElementById('riskNames').innerHTML = riskStudents.slice(0,5)
-    .map(n => `<div>• ${n}</div>`).join('');
-}
-
-// ═══════════════════════════════════════════════════
-// ACTIONS
-// ═══════════════════════════════════════════════════
 function setStatus(id, status, btn) {
-  attendanceData[id] = attendanceData[id] || { status: '', note: '' };
+  attendanceData[id] = attendanceData[id] || {status:'',note:''};
   attendanceData[id].status = status;
   changedRows.add(id);
-
-  // update button states in row
-  const row = btn.closest('tr');
-  row.querySelectorAll('.status-btn').forEach(b => {
-    b.className = 'status-btn';
-  });
+  btn.closest('tr').querySelectorAll('.status-btn').forEach(b => b.className='status-btn');
   btn.classList.add(`active-${status}`);
-
-  // show save button
-  document.querySelector('.save-btn')?.classList.add('show');
-  updateSaveBtnCount();
-  updateDashboardStats();
-
-  const count = document.getElementById('attCount');
-  if (count) {
-    const total = document.querySelectorAll('#attTableBody tr').length;
-    count.textContent = `${total} คน | เช็คแล้ว ${countChecked()} คน`;
-  }
+  const sf = document.getElementById('saveFloatBtn');
+  sf.classList.add('show');
+  sf.innerHTML = `💾 บันทึก ${changedRows.size} รายการ`;
+  updateAttCount();
+  renderDashboard();
 }
 
 function setNote(id, note) {
-  attendanceData[id] = attendanceData[id] || { status: '', note: '' };
+  attendanceData[id] = attendanceData[id] || {status:'',note:''};
   attendanceData[id].note = note;
   changedRows.add(id);
 }
@@ -1598,54 +860,348 @@ function markAll(status) {
     attendanceData[id].status = status;
     changedRows.add(id);
   });
-  // re-render
-  const year  = document.getElementById('attYear').value;
-  const grade = document.getElementById('attClass').value;
-  let filtered = studentsData.filter(s => s.status==='active' && s.year===year);
+  const grade  = document.getElementById('attClass').value;
+  const term   = TERMS[currentTermId];
+  let filtered = studentsData.filter(s => s.status==='active' && s.year===term.year);
   if (grade) filtered = filtered.filter(s => s.grade===grade);
   renderAttTable(filtered);
-  document.querySelector('.save-btn')?.classList.add('show');
-  updateSaveBtnCount();
-  toast(`✅ ทำเครื่องหมาย "${status}" ทั้งหมด ${filtered.length} คน`, 'info');
+  const sf = document.getElementById('saveFloatBtn');
+  sf.classList.add('show');
+  sf.innerHTML = `💾 บันทึก ${changedRows.size} รายการ`;
+  toast(`ทำเครื่องหมาย "${status}" ${filtered.length} คน`,'info');
+}
+
+function updateAttCount(total) {
+  const checked = Object.values(attendanceData).filter(a=>a.status).length;
+  total = total ?? document.querySelectorAll('#attTableBody tr').length;
+  document.getElementById('attCount').textContent = `เช็คแล้ว ${checked} / ${total} คน`;
 }
 
 async function saveAllAttendance() {
-  if (!changedRows.size) { toast('ไม่มีการเปลี่ยนแปลง', 'info'); return; }
-
+  if (!changedRows.size) { toast('ไม่มีการเปลี่ยนแปลง','info'); return; }
   const date    = document.getElementById('attDate').value;
-  const termId  = 'T003';
-  const year    = document.getElementById('attYear').value;
   const thaiDate = toThaiDate(date);
+  const rows = [...changedRows]
+    .filter(id => attendanceData[id]?.status)
+    .map((id, i) => [
+      `A${Date.now()}${i}`, id, currentTermId, TERMS[currentTermId].year,
+      thaiDate, attendanceData[id].status, attendanceData[id].note||''
+    ]);
+  if (!rows.length) { toast('ยังไม่ได้เลือกสถานะ','error'); return; }
 
   if (CONFIG.connected) {
     showLoading(true);
     try {
-      const rows = [...changedRows]
-        .filter(id => attendanceData[id]?.status)
-        .map((id, i) => {
-          const att = attendanceData[id];
-          const attId = `A${Date.now()}${i}`;
-          return [attId, id, termId, year, thaiDate, att.status, att.note || ''];
-        });
-
-      if (rows.length) {
-        await appendToSheet('✅ เช็คชื่อ', rows);
-        toast(`✅ บันทึก ${rows.length} รายการเข้า Google Sheets`, 'success');
-      }
+      await gasPost({ action:'append', sheet:'✅ เช็คชื่อ', values:rows });
+      // อัปเดต allAttendance local
+      rows.forEach(r => allAttendance.push({
+        attId:r[0],studentId:r[1],termId:r[2],year:r[3],date:r[4],status:r[5],note:r[6]
+      }));
+      toast(`✅ บันทึก ${rows.length} รายการ เทอม ${TERMS[currentTermId].label}`,'success');
     } catch(e) {
-      toast(`❌ บันทึกไม่สำเร็จ: ${e.message}`, 'error');
+      toast(`❌ ${e.message}`,'error');
     } finally {
       showLoading(false);
     }
   } else {
-    toast(`💾 บันทึก ${changedRows.size} รายการ (Demo mode — ยังไม่ได้เชื่อม Sheets)`, 'info');
+    toast(`💾 ${rows.length} รายการ (Demo mode)`,'info');
   }
-
   changedRows.clear();
-  document.querySelector('.save-btn')?.classList.remove('show');
+  document.getElementById('saveFloatBtn').classList.remove('show');
   renderDashboard();
 }
 
+// ════════════════════ STUDENT DETAIL ════════════════════
+function openStudentDetail(id) {
+  const stu = studentsData.find(s => s.id===id);
+  if (!stu) return;
+  openStudentId = id;
+
+  document.getElementById('detailName').textContent = stu.name;
+  document.getElementById('detailMeta').textContent =
+    `รหัส ${stu.id}  |  ชั้น ${stu.grade}/${stu.room}  |  ปี ${stu.year}  |  ผู้ปกครอง: ${stu.parent||'—'}`;
+
+  // คำนวณสถิติ
+  const myAtt = allAttendance.filter(a => a.studentId===id && a.termId===currentTermId);
+  const cnt = s => myAtt.filter(a=>a.status===s).length;
+  const p=cnt('present'), ab=cnt('absent'), la=cnt('late'), lv=cnt('leave');
+  const tot = p+ab+la+lv;
+  const pct = tot ? Math.round((p/tot)*100) : 0;
+
+  document.getElementById('detailStats').innerHTML = `
+    <div class="detail-stat"><div class="detail-stat-val" style="color:var(--green)">${p}</div><div class="detail-stat-label">มาเรียน</div></div>
+    <div class="detail-stat"><div class="detail-stat-val" style="color:var(--red)">${ab}</div><div class="detail-stat-label">ขาดเรียน</div></div>
+    <div class="detail-stat"><div class="detail-stat-val" style="color:var(--yellow)">${la}</div><div class="detail-stat-label">มาสาย</div></div>
+    <div class="detail-stat"><div class="detail-stat-val" style="color:var(--blue)">${lv}</div><div class="detail-stat-label">ลา</div></div>
+    <div class="detail-stat" style="grid-column:span 2">
+      <div class="detail-stat-val" style="font-size:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent">${pct}%</div>
+      <div class="detail-stat-label">% มาเรียน (${tot} วัน)</div>
+    </div>
+    <div class="detail-stat" style="grid-column:span 2">
+      <div style="background:var(--surface);border-radius:6px;height:10px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${pct>=80?'var(--green)':pct>=70?'var(--yellow)':'var(--red)'};border-radius:6px"></div>
+      </div>
+      <div class="detail-stat-label" style="margin-top:6px">${TERMS[currentTermId]?.label||''}</div>
+    </div>`;
+
+  // ประวัติทั้งหมด
+  const hist = [...myAtt].sort((a,b)=>b.date.localeCompare(a.date));
+  const stColor = {present:'var(--green)',absent:'var(--red)',late:'var(--yellow)',leave:'var(--blue)'};
+  const stLabel = {present:'มา',absent:'ขาด',late:'สาย',leave:'ลา'};
+  document.getElementById('detailHistoryList').innerHTML = hist.length
+    ? hist.map(a=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px;color:var(--text2)">${a.date}</span>
+        <span style="font-size:13px;font-weight:700;color:${stColor[a.status]||'var(--text3)'}">${stLabel[a.status]||a.status}</span>
+        <span style="font-size:12px;color:var(--text3)">${a.note||''}</span>
+      </div>`).join('')
+    : `<div class="empty-state" style="padding:30px"><p>ยังไม่มีบันทึก</p></div>`;
+
+  document.getElementById('detailMonthlyGrid').innerHTML = '';
+  document.getElementById('detailMonthSel').value = '';
+  document.getElementById('stuDetailModal').style.display = 'block';
+}
+
+function renderDetailMonthly() {
+  const val = document.getElementById('detailMonthSel').value;
+  if (!val) return;
+  const [mm, yy] = val.split('/');
+  const month = parseInt(mm);
+  const year  = parseInt(yy);
+  const csYear = year - 543; // ค.ศ.
+
+  // วันในเดือนนั้น
+  const daysInMonth = new Date(csYear, month, 0).getDate();
+  const firstDay    = new Date(csYear, month-1, 1).getDay(); // 0=อา
+  // ปรับให้ จ=0
+  const startCol    = firstDay === 0 ? 6 : firstDay - 1;
+
+  const myAtt = allAttendance.filter(a => {
+    if (a.studentId !== openStudentId) return false;
+    const parts = a.date.split('/');
+    return parts[1]===mm && parts[2]===yy;
+  });
+  const attMap = {};
+  myAtt.forEach(a => { attMap[parseInt(a.date.split('/')[0])] = a.status; });
+
+  const dayHeaders = ['จ','อ','พ','พฤ','ศ','ส','อา'];
+  let html = `<div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:10px">${THAI_MONTHS_FULL[month]} ${yy}</div>`;
+  html += `<div class="month-grid">`;
+  html += dayHeaders.map(d=>`<div class="month-day-header">${d}</div>`).join('');
+
+  // empty cells ก่อนวันที่ 1
+  for (let i=0;i<startCol;i++) html += `<div class="month-day empty"></div>`;
+
+  for (let d=1;d<=daysInMonth;d++) {
+    const dow = (startCol + d - 1) % 7; // 0=จ, 5=ส, 6=อา
+    const status = attMap[d];
+    let cls = 'month-day';
+    let icon = '';
+    if (dow >= 5) { cls += ' weekend'; }
+    else if (status === 'present') { cls += ' present'; icon='✓'; }
+    else if (status === 'absent')  { cls += ' absent';  icon='✗'; }
+    else if (status === 'late')    { cls += ' late';    icon='⏰'; }
+    else if (status === 'leave')   { cls += ' leave';   icon='📋'; }
+    else { cls += ' no-school'; }
+    html += `<div class="${cls}"><div class="day-num">${d}</div><div class="day-status">${icon}</div></div>`;
+  }
+  html += '</div>';
+
+  // สรุปเดือนนั้น
+  const p=myAtt.filter(a=>a.status==='present').length;
+  const ab=myAtt.filter(a=>a.status==='absent').length;
+  const la=myAtt.filter(a=>a.status==='late').length;
+  const lv=myAtt.filter(a=>a.status==='leave').length;
+  html += `<div style="display:flex;gap:16px;padding:10px 0;font-size:13px;border-top:1px solid var(--border);margin-top:4px">
+    <span style="color:var(--green)">✅ มา ${p} วัน</span>
+    <span style="color:var(--red)">❌ ขาด ${ab} วัน</span>
+    <span style="color:var(--yellow)">⏰ สาย ${la} วัน</span>
+    <span style="color:var(--blue)">📋 ลา ${lv} วัน</span>
+  </div>`;
+
+  document.getElementById('detailMonthlyGrid').innerHTML = html;
+}
+
+// ════════════════════ STUDENTS LIST ════════════════════
+function renderStudentList() {
+  const year   = document.getElementById('stuYear')?.value   || '2568';
+  const grade  = document.getElementById('stuClass')?.value  || '';
+  const status = document.getElementById('stuStatus')?.value || '';
+  const search = document.getElementById('stuSearch')?.value?.toLowerCase() || '';
+
+  let f = studentsData.filter(s=>s.year===year);
+  if (grade)  f = f.filter(s=>s.grade===grade);
+  if (status) f = f.filter(s=>s.status===status);
+  if (search) f = f.filter(s=>s.name.toLowerCase().includes(search)||s.id.includes(search));
+
+  document.getElementById('stuCount').textContent =
+    `ปี ${year} — พบ ${f.length} คน จาก ${studentsData.filter(s=>s.year===year).length} คน`;
+
+  const tbody = document.getElementById('stuTableBody');
+  if (!f.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="icon">👨‍🎓</div><p>ไม่พบนักเรียน</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = f.map((s,i)=>{
+    const gb = s.gender==='ชาย'
+      ? `<span class="gender-badge gender-m">ชาย</span>`
+      : `<span class="gender-badge gender-f">หญิง</span>`;
+    const sb = s.status==='active'
+      ? `<span class="status-pill pill-active">active</span>`
+      : `<span class="status-pill pill-transferred">ย้ายออก</span>`;
+    // นับการมาเรียนปีนี้
+    const myAtt = allAttendance.filter(a=>a.studentId===s.id&&a.year===year);
+    const p  = myAtt.filter(a=>a.status==='present').length;
+    const ab = myAtt.filter(a=>a.status==='absent').length;
+    const tot= p+ab+myAtt.filter(a=>a.status==='late'||a.status==='leave').length;
+    const pct= tot?Math.round((p/tot)*100):0;
+    return `<tr>
+      <td style="color:var(--text3);text-align:center">${i+1}</td>
+      <td><code style="color:var(--accent);font-size:13px">${s.id}</code></td>
+      <td class="student-name">${s.name}</td>
+      <td>${gb}</td>
+      <td><span class="grade-badge">${s.grade}/${s.room}</span></td>
+      <td style="font-size:13px;color:var(--text2)">${s.parent||'—'}</td>
+      <td>${sb}</td>
+      <td>
+        <button class="btn btn-outline" style="padding:4px 10px;font-size:12px" onclick="openStudentDetail('${s.id}')">
+          📊 ${tot?`${pct}% (${tot}วัน)`:'ดูประวัติ'}
+        </button>
+      </td>
+      <td>
+        <button class="btn btn-outline" style="padding:4px 8px;font-size:12px;color:var(--red);border-color:var(--red)"
+          onclick="transferOutStudent('${s.id}')">ย้ายออก</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterStudentList() { renderStudentList(); }
+
+// ════════════════════ DASHBOARD ════════════════════
+function renderDashboard() {
+  const todayStr = toThaiDate(new Date().toISOString().split('T')[0]);
+  const todayAtt = allAttendance.filter(a=>a.date===todayStr);
+
+  const p  = todayAtt.filter(a=>a.status==='present').length;
+  const ab = todayAtt.filter(a=>a.status==='absent').length;
+  const la = todayAtt.filter(a=>a.status==='late').length;
+  const lv = todayAtt.filter(a=>a.status==='leave').length;
+
+  // รวมจาก attendanceData ด้วย (ยังไม่ได้บันทึก)
+  const localP  = Object.values(attendanceData).filter(a=>a.status==='present').length;
+  const localAb = Object.values(attendanceData).filter(a=>a.status==='absent').length;
+
+  document.getElementById('dashPresent').textContent = p||localP||'—';
+  document.getElementById('dashAbsent').textContent  = ab||localAb||'—';
+  document.getElementById('dashLate').textContent    = la||'—';
+  document.getElementById('dashLeave').textContent   = lv||'—';
+  const tot = p+ab+la+lv||1;
+  document.getElementById('presentBar').style.width = `${Math.round((p/tot)*100)}%`;
+
+  // รายชื่อล่าสุด
+  const active = studentsData.filter(s=>s.status==='active'&&s.year===CONFIG.year);
+  document.getElementById('recentAttList').innerHTML = active.slice(0,6).map(s=>{
+    const a = allAttendance.filter(r=>r.studentId===s.id&&r.date===todayStr)[0]
+           || attendanceData[s.id];
+    const lbl = a?.status
+      ? {present:'✅ มา',absent:'❌ ขาด',late:'⏰ สาย',leave:'📋 ลา'}[a.status]
+      : '⬜ ยังไม่เช็ค';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-size:14px;font-weight:600">${s.name}</div><div style="font-size:12px;color:var(--text3)">${s.grade}/${s.room}</div></div>
+      <span style="font-size:13px">${lbl}</span>
+    </div>`;
+  }).join('');
+
+  const absent = active.filter(s => {
+    const a = allAttendance.find(r=>r.studentId===s.id&&r.date===todayStr);
+    return a?.status==='absent' || attendanceData[s.id]?.status==='absent';
+  });
+  document.getElementById('riskList').innerHTML = absent.length
+    ? absent.map(s=>`<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;display:flex;justify-content:space-between">
+        <span style="font-weight:600">${s.name}</span>
+        <span style="color:var(--red)">ขาด</span>
+      </div>`).join('')
+    : `<div class="empty-state" style="padding:24px"><div class="icon" style="font-size:28px">✅</div><p style="font-size:13px">ไม่มีนักเรียนขาด</p></div>`;
+}
+
+// ════════════════════ REPORT ════════════════════
+function loadReport() {
+  const termId = document.getElementById('repTerm').value;
+  const grade  = document.getElementById('repClass').value;
+  const term   = TERMS[termId];
+  if (!term) return;
+
+  let filtered = studentsData.filter(s=>s.status==='active'&&s.year===term.year);
+  if (grade) filtered = filtered.filter(s=>s.grade===grade);
+
+  let totalPct = 0;
+  const riskList = [];
+
+  const tbody = document.getElementById('repTableBody');
+  tbody.innerHTML = filtered.map((s,i)=>{
+    const myAtt = allAttendance.filter(a=>a.studentId===s.id&&a.termId===termId);
+    const p  = myAtt.filter(a=>a.status==='present').length;
+    const ab = myAtt.filter(a=>a.status==='absent').length;
+    const la = myAtt.filter(a=>a.status==='late').length;
+    const lv = myAtt.filter(a=>a.status==='leave').length;
+    const tot = p+ab+la+lv;
+    const pct = tot ? Math.round((p/tot)*100) : 0;
+    totalPct += pct;
+    if (ab>=5) riskList.push(s.name);
+    const pc = pct>=80?'var(--green)':pct>=70?'var(--yellow)':'var(--red)';
+    return `<tr>
+      <td style="color:var(--text3);text-align:center">${i+1}</td>
+      <td class="student-name" style="cursor:pointer;color:var(--accent)" onclick="openStudentDetail('${s.id}')">${s.name}</td>
+      <td><span class="grade-badge">${s.grade}/${s.room}</span></td>
+      <td style="color:var(--green);font-weight:600;text-align:center">${p}</td>
+      <td style="color:var(--red);font-weight:600;text-align:center">${ab}</td>
+      <td style="color:var(--yellow);text-align:center">${la}</td>
+      <td style="color:var(--blue);text-align:center">${lv}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <span style="color:${pc};font-weight:700;min-width:36px">${tot?pct+'%':'—'}</span>
+        <div style="flex:1;background:var(--surface2);border-radius:4px;height:6px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:${pc};border-radius:4px"></div>
+        </div>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  const avg = filtered.length ? Math.round(totalPct/filtered.length) : 0;
+  document.getElementById('avgPct').textContent   = filtered.length ? `${avg}%` : '—';
+  document.getElementById('repTotal').textContent  = filtered.length;
+  document.getElementById('avgBar').style.width    = `${avg}%`;
+  document.getElementById('riskCount').textContent = riskList.length;
+  document.getElementById('riskNames').innerHTML   = riskList.slice(0,8).map(n=>`<div>• ${n}</div>`).join('');
+}
+
+// ════════════════════ CALENDAR ════════════════════
+function renderCalendar() {
+  const hList = document.getElementById('holidayList');
+  const mList = document.getElementById('makeupList');
+  const hols  = holidaysData.filter(h=>h.type==='holiday');
+  const mkups = holidaysData.filter(h=>h.type==='makeup');
+  hList.innerHTML = hols.length  ? hols.map(calItem).join('')  : `<div class="empty-state" style="padding:24px"><p>ยังไม่มีวันหยุด</p></div>`;
+  mList.innerHTML = mkups.length ? mkups.map(calItem).join('') : `<div class="empty-state" style="padding:24px"><p>ยังไม่มีวันชดเชย</p></div>`;
+}
+
+function calItem(h) {
+  const [d,m] = h.date.split('/');
+  const mon   = THAI_MONTHS[parseInt(m)]||'';
+  const typeLabel = h.type==='holiday'?'วันหยุด':'ชดเชย';
+  const typeCls   = h.type==='holiday'?'type-holiday':'type-makeup';
+  return `<div class="cal-item">
+    <div class="cal-date"><div class="cal-date-day">${d}</div><div class="cal-date-mon">${mon}</div></div>
+    <div style="flex:1"><div class="cal-name">${h.name}</div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <span class="${typeCls}">${typeLabel}</span>
+        <span class="cal-term">${h.term}</span>
+      </div>
+    </div>
+    <button onclick="deleteHoliday('${h.date}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">✕</button>
+  </div>`;
+}
+
+// ════════════════════ ACTIONS ════════════════════
 async function addStudent() {
   const id     = document.getElementById('newStuId').value.trim();
   const first  = document.getElementById('newStuFirst').value.trim();
@@ -1655,53 +1211,31 @@ async function addStudent() {
   const room   = document.getElementById('newStuRoom').value.trim();
   const date   = document.getElementById('newStuDate').value;
   const parent = document.getElementById('newStuParent').value.trim();
-  const phone  = document.getElementById('newStuPhone').value.trim();
   const term   = document.getElementById('newStuTerm').value;
 
-  if (!id || !first || !last) {
-    toast('กรุณากรอกเลขประจำตัว ชื่อ และนามสกุล', 'error'); return;
-  }
-  if (id.length !== 4 || isNaN(id)) {
-    toast('เลขประจำตัวต้องเป็นตัวเลข 4 หลัก', 'error'); return;
-  }
-  if (studentsData.find(s => s.id === id && s.year === '2568')) {
-    toast(`เลข ${id} มีอยู่แล้วในระบบ`, 'error'); return;
-  }
+  if (!id||!first||!last)          { toast('กรุณากรอกเลข ชื่อ และนามสกุล','error'); return; }
+  if (id.length!==4||isNaN(id))    { toast('เลขประจำตัวต้องเป็นตัวเลข 4 หลัก','error'); return; }
+  if (studentsData.find(s=>s.id===id&&s.year==='2568')) { toast(`เลข ${id} มีอยู่แล้ว`,'error'); return; }
 
-  const prefix = gender === 'ชาย' ? 'เด็กชาย' : 'เด็กหญิง';
+  const prefix   = gender==='ชาย'?'เด็กชาย':'เด็กหญิง';
   const fullname = `${prefix}${first} ${last}`;
   const thaiDate = toThaiDate(date);
-
-  const newStudent = { id, name: fullname, gender, grade, room, parent, status: 'active', year: '2568' };
-  studentsData.push(newStudent);
+  const newStu   = {id, name:fullname, gender, grade, room, parent, status:'active', year:'2568'};
+  studentsData.push(newStu);
 
   if (CONFIG.connected) {
     showLoading(true);
     try {
-      // เพิ่มใน room_history
-      await appendToSheet('🏫 room_history', [[
-        id, fullname, gender, '2568', grade, room, 'active', '', thaiDate, 'ย้ายเข้าระหว่างเทอม'
-      ]]);
-      // เพิ่มใน นักเรียนในเทอม
-      await appendToSheet('🔗 นักเรียนในเทอม', [[
-        term, id, fullname, '2568', `${grade}/${room}`, thaiDate, 'ย้ายเข้าระหว่างเทอม'
-      ]]);
-      toast(`✅ เพิ่ม ${fullname} เข้าระบบสำเร็จ`, 'success');
-    } catch(e) {
-      toast(`❌ ${e.message}`, 'error');
-    } finally {
-      showLoading(false);
-    }
+      await gasPost({action:'append',sheet:'🏫 room_history',values:[[id,fullname,gender,'2568',grade,room,'active','',thaiDate,'ย้ายเข้าระหว่างเทอม']]});
+      await gasPost({action:'append',sheet:'🔗 นักเรียนในเทอม',values:[[term,id,fullname,'2568',`${grade}/${room}`,thaiDate,'ย้ายเข้าระหว่างเทอม']]});
+      toast(`✅ เพิ่ม ${fullname} สำเร็จ`,'success');
+    } catch(e) { toast(`❌ ${e.message}`,'error'); }
+    finally { showLoading(false); }
   } else {
-    toast(`✅ เพิ่ม ${fullname} แล้ว (Demo mode)`, 'success');
+    toast(`✅ เพิ่ม ${fullname} (Demo mode)`,'success');
   }
-
-  // clear form
-  ['newStuId','newStuFirst','newStuLast','newStuParent','newStuPhone'].forEach(id2 => {
-    document.getElementById(id2).value = '';
-  });
-  renderStudentList();
-  populateClassDropdowns();
+  ['newStuId','newStuFirst','newStuLast','newStuParent'].forEach(i=>{ document.getElementById(i).value=''; });
+  renderStudentList(); populateClassDropdowns();
 }
 
 async function addHoliday() {
@@ -1710,185 +1244,121 @@ async function addHoliday() {
   const name = document.getElementById('newHolName').value.trim();
   const term = document.getElementById('newHolTerm').value;
   const note = document.getElementById('newHolNote').value.trim();
-
-  if (!date || !name) { toast('กรุณากรอกวันที่และชื่อวัน', 'error'); return; }
-
+  if (!date||!name) { toast('กรุณากรอกวันที่และชื่อวัน','error'); return; }
   const thaiDate = toThaiDate(date);
-  holidaysData.push({ date: thaiDate, name, type, term });
-
+  holidaysData.push({date:thaiDate, name, type, term});
   if (CONFIG.connected) {
     showLoading(true);
     try {
-      await appendToSheet('📆 ปฏิทิน_2568', [
-        [thaiDate, name, term, type, note]
-      ]);
-      toast(`✅ เพิ่ม "${name}" ลงปฏิทินสำเร็จ`, 'success');
-    } catch(e) {
-      toast(`❌ ${e.message}`, 'error');
-    } finally {
-      showLoading(false);
-    }
-  } else {
-    toast(`✅ เพิ่ม "${name}" แล้ว (Demo mode)`, 'success');
-  }
-
+      await gasPost({action:'append',sheet:'📆 ปฏิทิน_2568',values:[[thaiDate,name,term,type,note]]});
+      toast(`✅ เพิ่ม "${name}" ลงปฏิทินสำเร็จ`,'success');
+    } catch(e) { toast(`❌ ${e.message}`,'error'); }
+    finally { showLoading(false); }
+  } else { toast(`✅ เพิ่ม "${name}" (Demo mode)`,'success'); }
   document.getElementById('newHolName').value = '';
   document.getElementById('newHolNote').value = '';
   renderCalendar();
   showPage('calendar');
 }
 
-async function transferOut() {
-  const stuId = document.getElementById('transferId').value.trim();
-  const date  = document.getElementById('transferDate').value;
+function deleteHoliday(date) {
+  holidaysData = holidaysData.filter(h=>h.date!==date);
+  renderCalendar();
+  toast('ลบรายการแล้ว (ต้องลบใน Google Sheets ด้วย)','info');
+}
+
+function transferOut() {
+  const query = document.getElementById('transferId').value.trim();
   const note  = document.getElementById('transferNote').value.trim();
-
-  if (!stuId) { toast('กรุณากรอกเลขประจำตัวหรือชื่อ', 'error'); return; }
-
-  const stu = studentsData.find(s =>
-    s.id === stuId || s.name.includes(stuId));
-  if (!stu) { toast(`ไม่พบนักเรียน "${stuId}"`, 'error'); return; }
-
+  if (!query) { toast('กรุณากรอกเลขหรือชื่อ','error'); return; }
+  const stu = studentsData.find(s=>s.id===query||s.name.includes(query));
+  if (!stu) { toast(`ไม่พบ "${query}"`,'error'); return; }
   stu.status = 'transferred_out';
-  toast(`🚪 บันทึกย้ายออก: ${stu.name}`, 'success');
+  toast(`🚪 ${stu.name} ย้ายออกแล้ว`,'success');
   renderStudentList();
 }
 
 function transferOutStudent(id) {
-  const stu = studentsData.find(s => s.id === id);
+  const stu = studentsData.find(s=>s.id===id);
   if (!stu) return;
   if (confirm(`ยืนยันบันทึกย้ายออก: ${stu.name}?`)) {
     stu.status = 'transferred_out';
-    toast(`🚪 ${stu.name} ย้ายออกแล้ว`, 'info');
+    toast(`🚪 ${stu.name} ย้ายออกแล้ว`,'info');
     renderStudentList();
   }
 }
 
-function deleteHoliday(date) {
-  holidaysData = holidaysData.filter(h => h.date !== date);
-  renderCalendar();
-  toast('ลบรายการแล้ว (หมายเหตุ: ไม่ได้ลบจาก Google Sheets)', 'info');
-}
-
 function saveSettings() {
-  const url  = document.getElementById('settingScriptUrl')?.value.trim() || CONFIG.scriptUrl;
+  const url  = document.getElementById('settingScriptUrl').value.trim();
   const year = document.getElementById('settingYear').value;
-  CONFIG.scriptUrl = url;
+  if (url) {
+    CONFIG.scriptUrl = url;
+    localStorage.setItem('scriptUrl', url);
+    document.getElementById('scriptUrlInput').value = url;
+  }
   CONFIG.year = year;
-  localStorage.setItem('scriptUrl', url);
   localStorage.setItem('year', year);
-  document.getElementById('scriptUrlInput').value = url;
-  toast('💾 บันทึกการตั้งค่าแล้ว กำลังเชื่อมต่อ...', 'success');
+  toast('💾 บันทึกแล้ว กำลังเชื่อมต่อ...','success');
   connectSheets();
 }
 
-function exportReport() {
-  toast('📥 ฟีเจอร์ Export Excel จะรองรับเมื่อเชื่อมต่อ Sheets จริง', 'info');
-}
-
-// ═══════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════
-function filterStudents()   { loadTodayAttendance(); }
-function filterStudentList(){ renderStudentList(); }
-
-function countChecked() {
-  return Object.values(attendanceData).filter(a => a.status).length;
-}
-
-function updateDashboardStats() {
-  const all = Object.values(attendanceData);
-  const p = all.filter(a=>a.status==='present').length;
-  const a = all.filter(a=>a.status==='absent').length;
-  const l = all.filter(a=>a.status==='late').length;
-  const lv= all.filter(a=>a.status==='leave').length;
-  const tot = all.filter(a=>a.status).length || 1;
-  document.getElementById('dashPresent').textContent = p;
-  document.getElementById('dashAbsent').textContent  = a;
-  document.getElementById('dashLate').textContent    = l;
-  document.getElementById('dashLeave').textContent   = lv;
-  document.getElementById('presentBar').style.width  = `${Math.round((p/tot)*100)}%`;
-}
-
-function updateSaveBtnCount() {
-  const btn = document.querySelector('.save-btn');
-  if (btn) btn.innerHTML = `💾 บันทึก ${changedRows.size} รายการ`;
-}
-
+// ════════════════════ HELPERS ════════════════════
 function toThaiDate(iso) {
   if (!iso) return '';
   const [y,m,d] = iso.split('-');
-  return `${parseInt(d).toString().padStart(2,'0')}/${m}/${parseInt(y)+543}`;
-}
-
-function thaiMonShort(m) {
-  return ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.',
-          'ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][m] || '';
+  return `${d}/${m}/${parseInt(y)+543}`;
 }
 
 function populateClassDropdowns() {
-  const grades = [...new Set(studentsData.map(s => s.grade))].sort();
+  const grades = [...new Set(studentsData.map(s=>s.grade))].sort();
   ['attClass','stuClass','repClass'].forEach(id => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    const cur = sel.value;
-    sel.innerHTML = `<option value="">ทุกชั้น</option>` +
-      grades.map(g => `<option value="${g}" ${g===cur?'selected':''}>${g}</option>`).join('');
+    const el = document.getElementById(id);
+    if (!el) return;
+    const cur = el.value;
+    el.innerHTML = `<option value="">ทุกชั้น</option>` +
+      grades.map(g=>`<option value="${g}" ${g===cur?'selected':''}>${g}</option>`).join('');
   });
 }
 
 function setConnStatus(state, text) {
   const dot  = document.getElementById('connDot');
   const span = document.getElementById('connText');
-  dot.className  = `dot ${state}`;
+  dot.className = `dot ${state}`;
   span.textContent = text;
-  span.style.color = state === 'connected' ? 'var(--green)'
-                   : state === 'error'     ? 'var(--red)'
-                   : state === 'loading'   ? 'var(--yellow)'
-                   : 'var(--text3)';
+  span.style.color = state==='connected'?'var(--green)':state==='error'?'var(--red)':state==='loading'?'var(--yellow)':'var(--text3)';
 }
 
 function showLoading(show) {
-  document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+  document.getElementById('loadingOverlay').style.display = show?'flex':'none';
 }
 
-function toast(msg, type = 'info') {
+function toast(msg, type='info') {
   const c = document.getElementById('toastContainer');
   const t = document.createElement('div');
   t.className = `toast ${type}`;
-  const icons = { success:'✅', error:'❌', info:'ℹ️' };
-  t.innerHTML = `<span>${icons[type]||'•'}</span><span>${msg}</span>`;
+  t.innerHTML = `<span>${{success:'✅',error:'❌',info:'ℹ️'}[type]||'•'}</span><span>${msg}</span>`;
   c.appendChild(t);
-  setTimeout(() => t.remove(), 4000);
+  setTimeout(()=>t.remove(), 4000);
 }
 
-// ═══════════════════════════════════════════════════
-// NAVIGATION
-// ═══════════════════════════════════════════════════
+function closeModal(id) { document.getElementById(id).style.display='none'; }
+
 const PAGE_TITLES = {
-  dashboard:  'ภาพรวม',
-  attendance: 'เช็คชื่อวันนี้',
-  students:   'รายชื่อนักเรียน',
-  report:     'สรุป/รายงาน',
-  calendar:   'ปฏิทินการเรียน',
-  settings:   'ตั้งค่า',
+  dashboard:'ภาพรวม', attendance:'เช็คชื่อ', students:'รายชื่อนักเรียน',
+  report:'สรุป/รายงาน', calendar:'ปฏิทินการเรียน', settings:'ตั้งค่า',
 };
 
 function showPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(`page-${name}`)?.classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>{
     if (n.getAttribute('onclick')?.includes(name)) n.classList.add('active');
   });
-  document.getElementById('pageTitle').textContent = PAGE_TITLES[name] || name;
+  document.getElementById('pageTitle').textContent = PAGE_TITLES[name]||name;
   closeSidebar();
-
-  // trigger page-specific loads
-  if (name === 'attendance' && !Object.keys(attendanceData).length) {
-    setTimeout(loadTodayAttendance, 100);
-  }
-  if (name === 'report') loadReport();
+  if (name==='attendance') loadAttendance();
+  if (name==='report')     loadReport();
 }
 
 function toggleSidebar() {
@@ -1900,11 +1370,5 @@ function closeSidebar() {
   document.getElementById('overlay').classList.remove('show');
 }
 </script>
-
-<!-- Save floating button -->
-<button class="save-btn" id="saveBtn" onclick="saveAllAttendance()">
-  💾 บันทึก 0 รายการ
-</button>
-
 </body>
 </html>
