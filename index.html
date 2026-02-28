@@ -1204,7 +1204,8 @@ async function connectSheets() {
   setConnStatus('loading', 'กำลังเชื่อมต่อ...');
   showLoading(true);
   try {
-    const res  = await fetch(`${CONFIG.scriptUrl}?action=ping`);
+    // ใช้ GET ดึง room_history แถวแรกเพื่อทดสอบการเชื่อมต่อ
+    const res  = await fetch(`${CONFIG.scriptUrl}?sheet=${encodeURIComponent('🏫 room_history')}&range=A1:B2`);
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
