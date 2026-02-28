@@ -687,14 +687,14 @@
 
     <div class="sidebar-footer">
       <div class="config-box">
-        <label>Google Sheets API Key</label>
-        <input type="password" id="apiKeyInput" placeholder="AIzaSy..." value="">
-        <label style="margin-top:10px">Sheet ID</label>
-        <input type="text" id="sheetIdInput" placeholder="1BxiMVs0..." value="">
+        <label>Apps Script URL</label>
+        <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/..."
+          value="https://script.google.com/macros/s/AKfycbwEURj9tbaV9usml4xmYXbNPHrKrriNklz1xhDqu1N-HM_VFyVqhMLPP9GJsPFIoRWTkg/exec"
+          style="font-size:10px">
         <button class="btn-connect" onclick="connectSheets()">🔌 เชื่อมต่อ</button>
         <div class="connection-status">
           <div class="dot" id="connDot"></div>
-          <span id="connText" style="color:var(--text3)">ยังไม่ได้เชื่อมต่อ</span>
+          <span id="connText" style="color:var(--text3)">กำลังเชื่อมต่อ...</span>
         </div>
       </div>
     </div>
@@ -1069,17 +1069,13 @@
 
         <!-- Google Sheets config -->
         <div class="card" style="margin-top:20px">
-          <div class="card-title">🔌 การตั้งค่า Google Sheets</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+          <div class="card-title">🔌 การตั้งค่า Google Apps Script</div>
+          <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
             <div class="form-group">
-              <label class="form-label">Google Sheets ID</label>
-              <input type="text" class="form-input" id="settingSheetId"
-                placeholder="ดูจาก URL: /spreadsheets/d/[ID]/edit">
-            </div>
-            <div class="form-group">
-              <label class="form-label">API Key</label>
-              <input type="password" class="form-input" id="settingApiKey"
-                placeholder="สร้างจาก Google Cloud Console">
+              <label class="form-label">Apps Script URL</label>
+              <input type="text" class="form-input" id="settingScriptUrl"
+                value="https://script.google.com/macros/s/AKfycbwEURj9tbaV9usml4xmYXbNPHrKrriNklz1xhDqu1N-HM_VFyVqhMLPP9GJsPFIoRWTkg/exec"
+                placeholder="https://script.google.com/macros/s/.../exec">
             </div>
             <div class="form-group">
               <label class="form-label">ปีการศึกษาปัจจุบัน</label>
@@ -1090,16 +1086,14 @@
             </div>
           </div>
           <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:4px">
-            <p style="font-size:13px;color:var(--text2);font-weight:600;margin-bottom:8px">📋 วิธีขอ API Key (ฟรี)</p>
+            <p style="font-size:13px;color:var(--text2);font-weight:600;margin-bottom:8px">📋 วิธีอัปเดต Apps Script URL</p>
             <ol style="font-size:13px;color:var(--text3);line-height:2;padding-left:18px">
-              <li>ไปที่ <a href="https://console.cloud.google.com" target="_blank" style="color:var(--accent)">console.cloud.google.com</a></li>
-              <li>สร้าง Project ใหม่ → เปิดใช้ "Google Sheets API"</li>
-              <li>ไปที่ Credentials → Create API Key</li>
-              <li>ใน Google Sheets → Share → "Anyone with the link can view"</li>
-              <li>วาง API Key และ Sheet ID ด้านบน แล้วกดเชื่อมต่อ</li>
+              <li>เปิด Google Sheets → Extensions → Apps Script</li>
+              <li>Deploy → Manage deployments → คัดลอก URL</li>
+              <li>วาง URL ด้านบน แล้วกดบันทึก</li>
             </ol>
           </div>
-          <button class="btn btn-primary" style="margin-top:12px" onclick="saveSettings()">💾 บันทึกการตั้งค่า</button>
+          <button class="btn btn-primary" style="margin-top:12px" onclick="saveSettings()">💾 บันทึกและเชื่อมต่อ</button>
         </div>
       </div>
 
@@ -1112,9 +1106,8 @@
 // CONFIG
 // ═══════════════════════════════════════════════════
 let CONFIG = {
-  sheetId:  localStorage.getItem('sheetId')  || '1S8poPgk71dgUIVkT96aKuVuOCvSIDtnO7QM6YOr9Hbw',
-  apiKey:   localStorage.getItem('apiKey')   || 'AIzaSyDlXbjsKDuYzrgjafZJzgMnKtAUCj49ys8',
-  year:     localStorage.getItem('year')     || '2568',
+  scriptUrl: localStorage.getItem('scriptUrl') || 'https://script.google.com/macros/s/AKfycbwEURj9tbaV9usml4xmYXbNPHrKrriNklz1xhDqu1N-HM_VFyVqhMLPP9GJsPFIoRWTkg/exec',
+  year:      localStorage.getItem('year')      || '2568',
   connected: false,
 };
 
@@ -1135,7 +1128,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setTodayDate();
   loadFromStorage();
   populateSampleData();  // โหลดข้อมูลตัวอย่าง
-  if (CONFIG.sheetId && CONFIG.apiKey) {
+  if (CONFIG.scriptUrl) {
     connectSheets();
   }
 });
@@ -1157,10 +1150,8 @@ function setTodayDate() {
 }
 
 function loadFromStorage() {
-  document.getElementById('apiKeyInput').value   = CONFIG.apiKey;
-  document.getElementById('sheetIdInput').value  = CONFIG.sheetId;
-  document.getElementById('settingApiKey').value  = CONFIG.apiKey;
-  document.getElementById('settingSheetId').value = CONFIG.sheetId;
+  const el = document.getElementById('scriptUrlInput');
+  if (el) el.value = CONFIG.scriptUrl;
 }
 
 // ═══════════════════════════════════════════════════
@@ -1210,41 +1201,20 @@ function populateSampleData() {
 // GOOGLE SHEETS CONNECTION
 // ═══════════════════════════════════════════════════
 async function connectSheets() {
-  const apiKey  = document.getElementById('apiKeyInput').value.trim()
-                || document.getElementById('settingApiKey').value.trim();
-  const sheetId = document.getElementById('sheetIdInput').value.trim()
-                || document.getElementById('settingSheetId').value.trim();
-
-  if (!apiKey || !sheetId) {
-    toast('กรุณากรอก API Key และ Sheet ID', 'error'); return;
-  }
-
   setConnStatus('loading', 'กำลังเชื่อมต่อ...');
   showLoading(true);
-
   try {
-    // ทดสอบด้วยการดึง sheet metadata
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?key=${apiKey}`;
-    const res  = await fetch(url);
+    const res  = await fetch(`${CONFIG.scriptUrl}?action=ping`);
     const data = await res.json();
+    if (data.error) throw new Error(data.error);
 
-    if (data.error) throw new Error(data.error.message);
-
-    CONFIG.sheetId  = sheetId;
-    CONFIG.apiKey   = apiKey;
     CONFIG.connected = true;
+    setConnStatus('connected', 'เชื่อมต่อแล้ว ✓');
+    toast('✅ เชื่อมต่อ Google Sheets สำเร็จ', 'success');
 
-    localStorage.setItem('sheetId', sheetId);
-    localStorage.setItem('apiKey',  apiKey);
-
-    setConnStatus('connected', `เชื่อมต่อแล้ว ✓`);
-    toast(`✅ เชื่อมต่อสำเร็จ: ${data.properties?.title || 'Google Sheet'}`, 'success');
-
-    // โหลดข้อมูลจริง
     await loadStudentsFromSheets();
     await loadCalendarFromSheets();
     renderDashboard();
-
   } catch(e) {
     setConnStatus('error', 'เชื่อมต่อไม่สำเร็จ');
     toast(`❌ ${e.message}`, 'error');
@@ -1255,23 +1225,22 @@ async function connectSheets() {
 }
 
 async function fetchSheet(sheetName, range='') {
-  const r = range ? `${sheetName}!${range}` : sheetName;
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.sheetId}/values/${encodeURIComponent(r)}?key=${CONFIG.apiKey}`;
-  const res = await fetch(url);
+  const params = new URLSearchParams({ sheet: sheetName });
+  if (range) params.set('range', range);
+  const res  = await fetch(`${CONFIG.scriptUrl}?${params}`);
   const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
+  if (data.error) throw new Error(data.error);
   return data.values || [];
 }
 
 async function appendToSheet(sheetName, values) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.sheetId}/values/${encodeURIComponent(sheetName)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS&key=${CONFIG.apiKey}`;
-  const res = await fetch(url, {
+  const res = await fetch(CONFIG.scriptUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ values }),
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action: 'append', sheet: sheetName, values }),
   });
   const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
+  if (data.error) throw new Error(data.error);
   return data;
 }
 
@@ -1801,16 +1770,14 @@ function deleteHoliday(date) {
 }
 
 function saveSettings() {
-  const sheetId = document.getElementById('settingSheetId').value.trim();
-  const apiKey  = document.getElementById('settingApiKey').value.trim();
-  const year    = document.getElementById('settingYear').value;
-
-  document.getElementById('sheetIdInput').value = sheetId;
-  document.getElementById('apiKeyInput').value  = apiKey;
+  const url  = document.getElementById('settingScriptUrl')?.value.trim() || CONFIG.scriptUrl;
+  const year = document.getElementById('settingYear').value;
+  CONFIG.scriptUrl = url;
   CONFIG.year = year;
+  localStorage.setItem('scriptUrl', url);
   localStorage.setItem('year', year);
-
-  toast('💾 บันทึกการตั้งค่าแล้ว กด "เชื่อมต่อ" เพื่อเริ่มใช้งาน', 'success');
+  document.getElementById('scriptUrlInput').value = url;
+  toast('💾 บันทึกการตั้งค่าแล้ว กำลังเชื่อมต่อ...', 'success');
   connectSheets();
 }
 
