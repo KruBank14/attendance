@@ -396,6 +396,12 @@ tr:hover td{background:rgba(255,255,255,.015)}
       <button class="pin-btn" style="background:var(--s1)" onclick="pinPress('')"></button>
     </div>
     <div class="login-error" id="loginError"></div>
+    <button onclick="testConnection()" style="margin-top:16px;background:transparent;border:1px solid var(--border);
+      color:var(--text3);padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit">
+      🔧 ทดสอบการเชื่อมต่อ
+    </button>
+    <div id="debugLog" style="margin-top:10px;font-size:11px;color:var(--text3);text-align:left;
+      background:var(--bg);border-radius:8px;padding:8px;display:none;word-break:break-all;max-height:120px;overflow-y:auto"></div>
   </div>
 </div>
 
@@ -761,10 +767,55 @@ function updatePinDots() {
   }
 }
 
-async function submitPin() {
-  document.getElementById('loginError').textContent = '';
+async function testConnection() {
+  const log = document.getElementById('debugLog');
+  log.style.display = 'block';
+  log.textContent = '🔄 กำลังทดสอบ...\n';
+
+  const url = `${SCRIPT_URL}?action=ping`;
+  log.textContent += `URL: ${url.substring(0,80)}...\n`;
+
   try {
-    const res  = await apiPost({ action:'login', pin: pinBuffer });
+    const res  = await fetch(url);
+    const text = await res.text();
+    log.textContent += `Status: ${res.status}\n`;
+    log.textContent += `Response: ${text.substring(0,200)}\n`;
+
+    try {
+      const data = JSON.parse(text);
+      if (data.ok) {
+        log.textContent += `✅ เชื่อมต่อสำเร็จ! เวลา: ${data.time}\n`;
+        log.style.color = 'var(--green)';
+      } else {
+        log.textContent += `❌ Error: ${data.error}\n`;
+        log.style.color = 'var(--red)';
+      }
+    } catch(e) {
+      log.textContent += `❌ JSON parse error — Apps Script อาจส่งกลับ HTML แทน JSON\n`;
+      log.textContent += `ตรวจสอบ: Deploy ถูกต้อง? Access = Anyone?\n`;
+      log.style.color = 'var(--yellow)';
+    }
+  } catch(e) {
+    log.textContent += `❌ Network error: ${e.message}\n`;
+    log.style.color = 'var(--red)';
+  }
+}
+
+async function submitPin() {
+  document.getElementById('loginError').textContent = 'กำลังตรวจสอบ...';
+  try {
+    // ทดสอบ ping ก่อน
+    const pingRes = await fetch(`${SCRIPT_URL}?action=ping`);
+    const pingText = await pingRes.text();
+    console.log('PING response:', pingText);
+    let pingData;
+    try { pingData = JSON.parse(pingText); } catch(e) {
+      throw new Error('Apps Script ตอบกลับผิดรูปแบบ: ' + pingText.substring(0,100));
+    }
+    if (pingData.error) throw new Error('Apps Script error: ' + pingData.error);
+
+    // login
+    const res = await apiPost({ action:'login', pin: pinBuffer });
     if (res.success) {
       SESSION = res;
       localStorage.setItem('session', JSON.stringify(SESSION));
@@ -774,11 +825,10 @@ async function submitPin() {
       document.getElementById('loginError').textContent = res.error || 'PIN ไม่ถูกต้อง';
       pinBuffer = '';
       updatePinDots();
-      for (let i = 0; i < 4; i++)
-        document.getElementById('d'+i).style.animation = 'none';
     }
   } catch(e) {
-    document.getElementById('loginError').textContent = 'เชื่อมต่อไม่ได้ ลองใหม่';
+    console.error('Login error:', e);
+    document.getElementById('loginError').textContent = `❌ ${e.message}`;
     pinBuffer = '';
     updatePinDots();
   }
