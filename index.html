@@ -1138,9 +1138,11 @@ async function saveAttendance(confirmed=false) {
 
   loadingShow('กำลังบันทึก...');
   try {
+    const grade = document.getElementById('attClass')?.value || SESSION.room.split('/')[0];
+    if (!grade) { toast('กรุณาเลือกชั้นเรียนก่อน', 'error'); loadingHide(); return; }
     const res = await apiPost({
       action: confirmed ? 'saveAttendanceConfirmed' : 'saveAttendance',
-      records, termId: cfg.termId, year: cfg.year,
+      grade, records, termId: cfg.termId, year: cfg.year,
       date: thaiDate, user: SESSION.name,
     });
 
