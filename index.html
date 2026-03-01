@@ -945,7 +945,8 @@ async function loadAttendance() {
   loadingShow('โหลดข้อมูลเช็คชื่อ...');
   try {
     const cfg = getCfg();
-    const grade = document.getElementById('filterClass')?.value || SESSION.room;
+    const grade = document.getElementById('attClass')?.value || SESSION.room.split('/')[0];
+    if (!grade) { toast('กรุณาเลือกชั้นเรียนก่อน', 'error'); loadingHide(); return; }
     const data = await apiGet({ action:'getAttendance', date: thaiDate, termId: cfg.termId, grade, year: cfg.year });
     ATT_DATA = {};
     for (const [sid, rec] of Object.entries(data.attendance || {})) {
@@ -1113,7 +1114,7 @@ async function saveAttendance(confirmed=false) {
 
   if (!navigator.onLine) {
     // บันทึกลง queue
-    const gradeVal = document.getElementById('filterClass')?.value || SESSION.room;
+    const gradeVal = document.getElementById('attClass')?.value || SESSION.room.split('/')[0];
       OFFLINE_Q.push({ records, grade: gradeVal, termId: cfg.termId, year: cfg.year, date: thaiDate, user: SESSION.name });
     localStorage.setItem('offlineQ', JSON.stringify(OFFLINE_Q));
     CHANGED.clear();
@@ -1790,11 +1791,14 @@ function updateDateChip() {
 function populateClassDropdowns() {
   const grades = [...new Set(STUDENTS.map(s=>s.grade))]
     .sort((a,b) => GRADE_ORDER.indexOf(a)-GRADE_ORDER.indexOf(b));
+  // auto-select ชั้นของครู (ถ้าไม่ใช่ admin)
+  const teacherGrade = (SESSION.role==='teacher' && SESSION.room!=='ทั้งโรงเรียน')
+    ? SESSION.room.split('/')[0] : '';
   ['attClass','stuClass','repClass'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    const cur = el.value;
-    el.innerHTML = `<option value="">ทุกชั้น</option>` +
+    const cur = el.value || teacherGrade;
+    el.innerHTML = (id==='attClass' ? '' : `<option value="">ทุกชั้น</option>`) +
       grades.map(g=>`<option value="${g}" ${g===cur?'selected':''}>${g}</option>`).join('');
   });
 }
