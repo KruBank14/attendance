@@ -704,9 +704,11 @@ tr:hover td{background:rgba(255,255,255,.015)}
 // CONFIG
 // ══════════════════════════════════════════════════════
 const SCRIPT_URL = localStorage.getItem('scriptUrl') ||
-  'https://script.google.com/macros/s/AKfycbzhxn48yVjMcaHPd_npy9-7mXpbEsDLfFxj-rdoXvbfFXwSFdtXvNXdsc1My61Y5mzc/exec';
+  'https://script.google.com/macros/s/AKfycbxkbmfM-xR5ggKUuB91yeyfGpQxjT0wODVHqpV3soiIhEyB-g3deA1hmfm9FhdB3SemAQ/exec';
 
 const TERM_CFG = {
+  T005:{ label:'เทอม 1/2569', range:'15 พ.ค. – 10 ต.ค. 2569', year:'2569' },
+  T006:{ label:'เทอม 2/2569', range:'1 พ.ย. 2569 – 31 มี.ค. 2570', year:'2569' },
   T003:{ label:'เทอม 1/2568', range:'16 พ.ค. – 10 ต.ค. 2568', year:'2568' },
   T004:{ label:'เทอม 2/2568', range:'3 พ.ย. 2568 – 31 มี.ค. 2569', year:'2568' },
   T001:{ label:'เทอม 1/2567', range:'16 พ.ค. – 11 ต.ค. 2567', year:'2567' },
@@ -784,7 +786,10 @@ async function testConnection() {
     try {
       const data = JSON.parse(text);
       if (data.ok) {
-        log.textContent += `✅ เชื่อมต่อสำเร็จ! เวลา: ${data.time}\n`;
+        log.textContent += `✅ เชื่อมต่อสำเร็จ!\n`;
+        log.textContent += `เวลา: ${data.time}\n`;
+        log.textContent += `ปี: ${data.year} เทอม: ${data.term}\n`;
+        log.textContent += `โรงเรียน: ${data.school||'-'}\n`;
         log.style.color = 'var(--green)';
       } else {
         log.textContent += `❌ Error: ${data.error}\n`;
@@ -940,7 +945,8 @@ async function loadAttendance() {
   loadingShow('โหลดข้อมูลเช็คชื่อ...');
   try {
     const cfg = getCfg();
-    const data = await apiGet({ action:'getAttendance', date: thaiDate, termId: cfg.termId });
+    const grade = document.getElementById('filterClass')?.value || SESSION.room;
+    const data = await apiGet({ action:'getAttendance', date: thaiDate, termId: cfg.termId, grade, year: cfg.year });
     ATT_DATA = {};
     for (const [sid, rec] of Object.entries(data.attendance || {})) {
       ATT_DATA[sid] = { status: rec.status, reason: rec.reason, note: rec.note };
@@ -1107,7 +1113,8 @@ async function saveAttendance(confirmed=false) {
 
   if (!navigator.onLine) {
     // บันทึกลง queue
-    OFFLINE_Q.push({ records, termId: cfg.termId, year: cfg.year, date: thaiDate, user: SESSION.name });
+    const gradeVal = document.getElementById('filterClass')?.value || SESSION.room;
+      OFFLINE_Q.push({ records, grade: gradeVal, termId: cfg.termId, year: cfg.year, date: thaiDate, user: SESSION.name });
     localStorage.setItem('offlineQ', JSON.stringify(OFFLINE_Q));
     CHANGED.clear();
     document.getElementById('saveFloat').classList.remove('show');
@@ -1164,7 +1171,7 @@ async function syncOfflineQueue() {
   const failed = [];
   for (const q of OFFLINE_Q) {
     try {
-      await apiPost({ action:'saveAttendanceConfirmed', ...q });
+      await apiPost({ action:'saveAttendanceConfirmed', grade: q.grade||document.getElementById('filterClass')?.value||SESSION.room, ...q });
     } catch(e) {
       failed.push(q);
     }
@@ -1250,7 +1257,7 @@ async function openStuDetail(sid) {
 
   loadingShow('โหลดประวัติ...');
   try {
-    const data = await apiGet({ action:'getStudentAttendance', studentId: sid });
+    const data = await apiGet({ action:'getStudentStats', studentId: sid, grade: STUDENTS.find(s=>s.id===sid)?.grade||'', termId: getCfg().termId, year: getCfg().year });
     loadingHide();
     const records = data.records || [];
     renderStuStats(s, records);
@@ -1460,7 +1467,7 @@ async function rebuildWide() {
   const cfg = getCfg();
   loadingShow('กำลังสร้างตาราง Wide...');
   try {
-    const res = await apiPost({ action:'rebuildWide', termId: cfg.termId, year: cfg.year, user: SESSION.name });
+    const res = await apiPost({ action:'rebuildWide'  /* ไม่ใช้ใน v10 */, termId: cfg.termId, year: cfg.year, user: SESSION.name });
     toast(`✅ สร้าง ${res.sheet} เสร็จ — ${res.students} คน × ${res.days} วัน`, 'success');
   } catch(e) {
     toast(`❌ ${e.message}`, 'error');
@@ -1635,7 +1642,7 @@ function renderSettings() {
           <div class="form-group">
             <label class="form-label">🔌 Apps Script URL</label>
             <input type="text" class="form-input" id="cfg-url"
-              value="${SCRIPT_URL}" placeholder="https://script.google.com/...">
+              value="https://script.google.com/macros/s/AKfycbxkbmfM-xR5ggKUuB91yeyfGpQxjT0wODVHqpV3soiIhEyB-g3deA1hmfm9FhdB3SemAQ/exec" placeholder="https://script.google.com/...">
           </div>
           <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="saveConfig()">💾 บันทึกการตั้งค่า</button>
         </div>
