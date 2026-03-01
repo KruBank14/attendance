@@ -849,6 +849,18 @@ function logout() {
 // BOOT
 // ══════════════════════════════════════════════════════
 async function bootApp() {
+  // sync ปีและเทอมจาก Server ก่อนทุกครั้ง
+  try {
+    const ping = await fetch(`${SCRIPT_URL}?action=ping`);
+    const pd   = await ping.json();
+    if (pd.ok) {
+      window.SERVER_CONFIG = { year: pd.year, termId: pd.term, active_year: pd.year, active_term: pd.term };
+      // sync ลง localStorage ด้วย
+      localStorage.setItem('appConfig', JSON.stringify({ year: pd.year, termId: pd.term }));
+      console.log(`✅ Server config: ปี ${pd.year} เทอม ${pd.term}`);
+    }
+  } catch(e) { console.warn('ping failed, using localStorage config'); }
+
   document.getElementById('mainApp').style.display = 'flex';
   document.getElementById('userBadge').textContent = `👤 ${SESSION.name || SESSION.room}`;
 
@@ -1756,8 +1768,9 @@ function transferOut(sid, name) {
 // HELPERS
 // ══════════════════════════════════════════════════════
 function getCfg() {
-  const c = JSON.parse(localStorage.getItem('appConfig') || '{"year":"2568","termId":"T003"}');
-  return { year: c.year || '2568', termId: c.termId || 'T003' };
+  // ดึงจาก SERVER_CONFIG ก่อน (sync มาจาก ping) ถ้าไม่มีค่อยใช้ localStorage
+  const c = window.SERVER_CONFIG || JSON.parse(localStorage.getItem('appConfig') || '{}');
+  return { year: c.year || c.active_year || '2568', termId: c.termId || c.active_term || 'T003' };
 }
 
 function syncTermUI() {
